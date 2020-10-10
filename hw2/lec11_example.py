@@ -10,7 +10,6 @@ heuristic_cost = {'S':0, 'A':2, 'B':3, 'C':1, 'D':1,  'G':0}
 
 Q        = [['S', 0]]
 expanded = []
-#new_path = ['S',0]
 i = 0
 
 while True:

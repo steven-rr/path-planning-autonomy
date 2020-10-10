@@ -13,3 +13,41 @@ print(graph1[1])
 #perform Astar search on the graph.
 Q = []
 expanded = []
+
+while True:
+    # step 2: if Q is empty, fail, else choose best path from Q.
+    if  Q[0] == []:
+        break
+    else:
+        fn = [i[1] for i in Q]
+        best_path_index =  fn.index(min(fn))
+
+    current_head = Q[best_path_index][0][0];
+    best_path = Q[best_path_index][0];
+    best_cost = Q[best_path_index][1] - heuristic_cost[current_head];
+    # step 3 and 4: if head is G, return the best partial path. else remove the best partial path.
+    if current_head == 'G':
+        best_path_result = Q[best_path_index]
+        break
+    else:
+        del Q[best_path_index]
+
+    # step 5
+    if current_head in expanded:
+        continue
+    # step 6-9
+    else:
+        expanded.append(current_head)
+        children = graph1[current_head]
+        for child in children:
+            if child[0] in expanded:
+                children.remove(child)
+        for child in children:
+            new_path = child[0] + ' ' + best_path
+            new_cost = best_cost + child[1] + heuristic_cost[child[0]]
+            Q.append([new_path, new_cost])
+
+    #prevent overload.
+    i = i + 1
+    if i > 100:
+        break
