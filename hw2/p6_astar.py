@@ -92,10 +92,14 @@ def heuristic1(list_in):
             counter = counter + 1
     return counter
 
-#define graph dictionary for problem 6:
 list_init = [5, 4, 0 , 6, 1, 8, 7, 3, 2]
 cost_init = heuristic1(list_init)
-
+#define graph dictionary for problem 6 dynamically:
+graph1 = {}
+#define the state of each node.
+graph_nodes = {1:list_init}
+#define heuristic costs for problem 6 dynamically:
+heuristic_cost = {1: cost_init}
 
 #perform Astar search on the graph.
 Q = [[[1],cost_init]]
@@ -113,7 +117,7 @@ while True:
     best_path = Q[best_path_index][0];
     best_cost = Q[best_path_index][1] - heuristic_cost[current_head];
     # step 3 and 4: if head is G, return the best partial path. else remove the best partial path.
-    if current_head == 41:
+    if heuristic_cost[current_head] == 0:
         best_path_result = Q[best_path_index]
         break
     else:
@@ -125,6 +129,27 @@ while True:
     # step 6-9. expand and add new paths.
     else:
         expanded.append(current_head)
+        # all possible moves:
+        children = move(graph_nodes[current_head])
+        #now append as new nodes to graph1:
+        idx = len(graph_nodes)
+        child_idx = 1
+        firstpass = True
+        for child in children:
+            if child not in graph_nodes.values():
+                # add children states to graph_nodes
+                graph_nodes[idx + child_idx] = child
+                # add the respective heuristic cost:
+                heuristic_cost[idx + child_idx] = heuristic1(child)
+                # create edges within graph1.
+                if firstpass:
+                    graph1[current_head] = [idx + child_idx]
+                    firstpass = False
+                else:
+                    graph1[current_head].append(idx+child_idx)
+                # increment child index.
+                child_idx = child_idx + 1
+
         children = graph1[current_head]
         for child in children:
             if child in expanded:
@@ -137,7 +162,7 @@ while True:
 
     #prevent overload.
     i = i + 1
-    if i > 10000:
+    if i > 100:
         break
 
 print("best path is: ", best_path_result[0])
