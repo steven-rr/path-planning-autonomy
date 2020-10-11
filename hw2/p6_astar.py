@@ -79,10 +79,10 @@ def move(list_in):
         return list_result
     elif index == 8:
         list1 = move_up(list_in, index)
-        list2 = move_right(list_in, index)
-        list3 = move_left(list_in, index)
-        list_result = [list1, list2, list3]
+        list2 = move_left(list_in, index)
+        list_result = [list1, list2]
         return list_result
+
 # number of misplaced tiles.
 def heuristic1(list_in):
     list_goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
@@ -150,7 +150,12 @@ while True:
                 # increment child index.
                 child_idx = child_idx + 1
 
-        children = graph1[current_head]
+        #get node of the best path:
+        if current_head in graph1.keys():
+            children = graph1[current_head]
+        else:
+            children = []
+
         for child in children:
             if child in expanded:
                 children.remove(child)
@@ -162,7 +167,8 @@ while True:
 
     #prevent overload.
     i = i + 1
-    if i > 100:
+    if i > 10000:
+        print("ended early.")
         break
 
 print("best path is: ", best_path_result[0])
