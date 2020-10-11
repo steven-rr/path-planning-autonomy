@@ -144,9 +144,9 @@ def heuristic1(list_in, list_goal):
 #               Based on the following scheme:
 #
 #                     col0  col1  col2
-#               row 0   1     2     3
-#               row 1   4     5     6
-#               row 2   7     8     0
+#               row 0   0     1     2
+#               row 1   3     4     5
+#               row 2   6     7     8
 # -------------------------------------------------------------------------
 def generate_coords(idx_in):
     idx_horiz = 0
