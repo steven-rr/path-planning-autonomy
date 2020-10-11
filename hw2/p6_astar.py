@@ -92,8 +92,29 @@ def heuristic1(list_in):
             counter = counter + 1
     return counter
 
+#manhattan cost:
+def heuristic2(list_in):
+    list_goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+    counter = 0
+    for i in range(0,len(list_in)):
+        if list_in[i] != list_goal[i]:
+            idx = list_in.index(list_goal[i])
+            diff = idx - i
+            diff_vertical = int(diff/3)
+            diff_horizontal = abs(idx - diff_vertical*3 - i)
+            diff_vertical = abs(diff_vertical)
+            counter = counter + diff_horizontal + diff_vertical
+    return counter
+
+def heuristic(list_in):
+    mode = 2;
+    if mode == 1:
+        return heuristic1(list_in)
+    elif mode == 2:
+        return heuristic2(list_in)
+
 list_init = [5, 4, 0 , 6, 1, 8, 7, 3, 2]
-cost_init = heuristic1(list_init)
+cost_init = heuristic(list_init)
 #define graph dictionary for problem 6 dynamically:
 graph1 = {}
 #define the state of each node.
@@ -140,7 +161,7 @@ while True:
                 # add children states to graph_nodes
                 graph_nodes[idx + child_idx] = child
                 # add the respective heuristic cost:
-                heuristic_cost[idx + child_idx] = heuristic1(child)
+                heuristic_cost[idx + child_idx] = heuristic(child)
                 # create edges within graph1.
                 if firstpass:
                     graph1[current_head] = [idx + child_idx]
@@ -167,9 +188,14 @@ while True:
 
     #prevent overload.
     i = i + 1
-    if i > 10000:
+    if i > 20000:
         print("ended early.")
         break
 
 print("best path is: ", best_path_result[0])
+print("action sequence: ")
+inverse = len(best_path_result[0])
+for i in range(1,len(best_path_result[0])+1):
+    j = inverse - i
+    print(graph_nodes[best_path_result[0][j]])
 print("best path cost is: ", best_path_result[1])
