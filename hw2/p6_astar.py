@@ -157,7 +157,7 @@ def generate_coords(idx_in):
     elif idx_in < 6:
         idx_horiz = 1
         idx_vert = idx_in - 3
-    elif idx_in < 8:
+    elif idx_in < 9:
         idx_horiz = 2
         idx_vert = idx_in - 6
     coords_out = (idx_horiz, idx_vert)
