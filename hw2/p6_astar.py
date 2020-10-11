@@ -7,7 +7,8 @@
 # //|
 # //| Description : Solves the 8 puzzle problem using A*.
 # //|               Heuristic options: 1) Number of misplaced tiles.
-# //|                                  2) Manhattan distance between all tiles.
+# //|                                  2) Manhattan distance difference between
+# //|                                     current state and goal state
 # //|
 # //| Notes : Future work can include making a class so main() is less cluttered
 # //|
@@ -129,8 +130,7 @@ def move(list_in):
 #  Description: Given a list of tiles, outputs the number of misplaced tiles.
 #               This is used as a heuristic for A*
 # -------------------------------------------------------------------------
-def heuristic1(list_in):
-    list_goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+def heuristic1(list_in, list_goal):
     counter = 0
     for i in range(0,len(list_in)):
         if list_in[i] != list_goal[i]:
@@ -168,8 +168,7 @@ def generate_coords(idx_in):
 #  Description: Given a list of tiles, outputs the manhattan distance between
 #               all tiles. This is used as a heuristic for A*
 # -------------------------------------------------------------------------
-def heuristic2(list_in):
-    list_goal = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+def heuristic2(list_in, list_goal):
     counter = 0
     for i in range(0,len(list_in)):
         if list_in[i] != list_goal[i]:
@@ -186,26 +185,35 @@ def heuristic2(list_in):
 #  Description: Given a list of tiles, returns the heuristic cost based on
 #               mode.
 # -------------------------------------------------------------------------
-def heuristic(list_in, mode_in):
+def heuristic(list_in, list_goal, mode_in):
     if mode_in == 1:
-        return heuristic1(list_in)
+        return heuristic1(list_in, list_goal)
     elif mode_in == 2:
-        return heuristic2(list_in)
+        return heuristic2(list_in, list_goal)
 
-# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 #  Function: main
-#  Description: Given a list of tiles, returns the heuristic cost based on
-#               mode.
-# -------------------------------------------------------------------------
+#  Description: Given an initial state, a goal state, and a heuristic mode, returns the moves
+#               required to get to the goal state, along with action sequence.
+#               Heuristic modes:
+#                   1) Total number of misplaced tiles between current state and goal state
+#                   2) Total manhattan distance difference between current state and goal state
+# ----------------------------------------------------------------------------------------------
 def main():
-    list_init_state = [5, 4, 0 , 6, 1, 8, 7, 3, 2]
+    # inputs, user defined:
+    list_init_state = [5, 4, 0, 6, 1, 8, 7, 3, 2]
+    list_goal       = [1, 2, 3, 4, 5, 6, 7, 8, 0]
     heuristic_mode = 2
-    cost_init = heuristic(list_init_state, heuristic_mode)
-    #define graph dictionary for problem 6 dynamically:
+
+    # derive initial cost based on initial state.
+    cost_init = heuristic(list_init_state, list_goal, heuristic_mode)
+
+    # initialize graph1 dictionary, graph node dictionary, and heuristic cost dictionary.
+    # graph1: defines connectivity between nodes
+    # graph node dictionary: defines what "list" or "state" each node represents
+    # heuristic cost dictionary: defines what the heuristic cost is for each node.
     graph1 = {}
-    #define the state of each node dynamically.
     graph_nodes = {1:list_init_state}
-    #define heuristic costs for problem 6 dynamically:
     heuristic_cost = {1: cost_init}
 
     #perform Astar search on the graph.
@@ -230,10 +238,10 @@ def main():
         else:
             del Q[best_path_index]
 
-        # step 5
+        # step 5 if already expanded, don't expand further.
         if current_head in expanded:
             continue
-        # step 6-9. expand and add new paths.
+        # step 6-9. expand, add all new paths for exploration.
         else:
             expanded.append(current_head)
             # all possible moves:
@@ -247,7 +255,7 @@ def main():
                     # add children states to graph_nodes
                     graph_nodes[idx + child_idx] = child
                     # add the respective heuristic cost:
-                    heuristic_cost[idx + child_idx] = heuristic(child, heuristic_mode)
+                    heuristic_cost[idx + child_idx] = heuristic(child, list_goal, heuristic_mode)
                     # create edges within graph1.
                     if firstpass:
                         graph1[current_head] = [idx + child_idx]
