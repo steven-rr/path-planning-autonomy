@@ -63,124 +63,31 @@ def move_up(list_in, idx_in):
     list_result[idx_in - 3] = 0
     return list_result
 # -------------------------------------------------------------------------
+#  Class : Square
+#  Description: Holds functions for expanding squares.
+# -------------------------------------------------------------------------
+class Square:
+    # default constructor for square
+    def __init__(self, graph_vertices, tangram_vertices):
+        self.square_vertices = [[0,0],[1,0],[0,1],[1,1]]
+        self.tangram_vertices = tangram_vertices
+        self.graph_vertices = graph_vertices
+    def get_centroid(self):
+        return 0
+
+    def get_possible_moves(self):
+        return 0
+
+# -------------------------------------------------------------------------
 #  Function: move
-#  Description: Given a list of tiles, returns all possible combinations
-#               of movements in a list of lists.
+#  Description: Given a list of vertices, shapes used, and tangram configuration,
+#               returns all possible combinations next steps in a list of lists.
 # -------------------------------------------------------------------------
-def move(list_in):
-    index = list_in.index(0)
-    list1 = list_in[:]
-    list2 = list_in[:]
-    list3 = list_in[:]
-    list4 = list_in[:]
-    list_result = []
-    if index == 0:
-        list1 = move_right(list_in,index)
-        list2 = move_down(list_in, index)
-        list_result = [list1, list2]
-        return list_result
-    elif index == 1:
-        list1 = move_right(list_in, index)
-        list2 = move_left(list_in, index)
-        list3 = move_down(list_in, index)
-        list_result = [list1, list2, list3]
-        return list_result
-    elif index == 2:
-        list1 = move_left(list_in, index)
-        list2 = move_down(list_in, index)
-        list_result = [list1, list2]
-        return list_result
-    elif index == 3:
-        list1 = move_down(list_in, index)
-        list2 = move_up(list_in, index)
-        list3 = move_right(list_in, index)
-        list_result = [list1, list2, list3]
-        return list_result
-    elif index == 4:
-        list1 = move_right(list_in, index)
-        list2 = move_left(list_in, index)
-        list3 = move_down(list_in, index)
-        list4 = move_up(list_in, index)
-        list_result = [list1, list2, list3, list4]
-        return list_result
-    elif index == 5:
-        list1 = move_up(list_in, index)
-        list2 = move_down(list_in, index)
-        list3 = move_left(list_in, index)
-        list_result = [list1, list2, list3]
-        return list_result
-    elif index == 6:
-        list1 = move_up(list_in, index)
-        list2 = move_right(list_in, index)
-        list_result = [list1, list2]
-        return list_result
-    elif index == 7:
-        list1 = move_up(list_in, index)
-        list2 = move_right(list_in, index)
-        list3 = move_left(list_in, index)
-        list_result = [list1, list2, list3]
-        return list_result
-    elif index == 8:
-        list1 = move_up(list_in, index)
-        list2 = move_left(list_in, index)
-        list_result = [list1, list2]
-        return list_result
+def move(list_vertices, list_tangram, list_shapes):
+    for shape in list_shapes:
+        if shape == 0:
+            square1 = Square(list_vertices, list_tangram)
 
-# -------------------------------------------------------------------------
-#  Function: heuristic1
-#  Description: Given a list of tiles, outputs the number of misplaced tiles.
-#               This is used as a heuristic for A*
-# -------------------------------------------------------------------------
-def heuristic1(list_in, list_goal):
-    counter = 0
-    for i in range(0,len(list_in)):
-        if list_in[i] != list_goal[i]:
-            counter = counter + 1
-    return counter
-
-
-# -------------------------------------------------------------------------
-#  Function: move_right
-#  Description: Given an index based on 1D list, outputs 2D coordinates
-#               Based on the following scheme:
-#
-#                     col0  col1  col2
-#               row 0   0     1     2
-#               row 1   3     4     5
-#               row 2   6     7     8
-# -------------------------------------------------------------------------
-def generate_coords(idx_in):
-    idx_horiz = 0
-    idx_vert  = 0
-    if idx_in < 3:
-        idx_horiz = 0
-        idx_vert = idx_in
-    elif idx_in < 6:
-        idx_horiz = 1
-        idx_vert = idx_in - 3
-    elif idx_in < 9:
-        idx_horiz = 2
-        idx_vert = idx_in - 6
-    coords_out = (idx_horiz, idx_vert)
-    return coords_out
-
-# -------------------------------------------------------------------------
-#  Function: calc_centroid
-#  Description: Given a list of tiles, outputs the manhattan distance between
-#               all tiles. This is used as a heuristic for A*
-# -------------------------------------------------------------------------
-def calc_centroid(list_vertices_in):
-    centroid = []
-    if len(list_vertices_in) == 3:
-        centroid[0] = 1.0;
-        centroid[1] = 2.0;
-    elif len(list_vertices_in) == 4:
-        centroid[0] = 3.0;
-        centroid[1] = 4.0;
-    elif len(list_vertices_in) == 5:
-        centroid[0] = 6.0;
-        centroid[1] = 7.0;
-    return centroid
 
 
 # -------------------------------------------------------------------------
@@ -222,7 +129,7 @@ def main():
     # graph1: defines connectivity between nodes.
     # graph centers dictionary: defines where the centers of each shape is, for heuristic computation.
     # graph vertices dict: defines where the vertices of each shape is.
-    # graph shapes dict: defines what shapes have been used so far.
+    # graph shapes dict: defines what shapes have NOT been used so far.
     #           0 = Square
     #           1 = Big Triangle.
     #           2 = Big Triangle.
@@ -233,7 +140,7 @@ def main():
     graph1 = {}
     graph_centers = {1:list_init_centers}
     graph_vertices = {1: list_init_vertices}
-    graph_shapes = {1:[]}
+    graph_shapes = {1:[0, 1, 2, 3, 4, 5]}
     heuristic_cost = {1: cost_init}
 
     #perform Astar search on the graph.
