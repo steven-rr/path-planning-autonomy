@@ -57,8 +57,10 @@ class Triangle1:
 
         # rotate by using rotate matrix.
         for i in range(0, len(triag1_vertices)):
-            self.triag1_vertices[i][0] = (triag1_vertices[i][0] - triag1_vertices[i][1])
-            self.triag1_vertices[i][1] = (triag1_vertices[i][1] + triag1_vertices[i][0])
+            print("mag0: ", sqrt( (triag1_vertices[i][0] )**2 + (triag1_vertices[i][1])**2))
+            self.triag1_vertices[i][0] = (sqrt(2)/2)*(triag1_vertices[i][0] - triag1_vertices[i][1])
+            self.triag1_vertices[i][1] = (sqrt(2)/2)*(triag1_vertices[i][1] + triag1_vertices[i][0])
+            print("mag0: ", sqrt( (triag1_vertices[i][0] )**2 + (triag1_vertices[i][1])**2))
         print("area3: " , self.calc_area(self.triag1_vertices))
 
         # shift origin back.
@@ -68,6 +70,8 @@ class Triangle1:
         print("area4: " , self.calc_area(self.triag1_vertices))
         print("")
         return self.triag1_vertices
+
+
     def get_possible_moves(self):
         self.possible_moves = self.list_vertices[:]
         return self.possible_moves
