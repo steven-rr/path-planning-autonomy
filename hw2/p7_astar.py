@@ -57,8 +57,25 @@ def heuristic(list_centers, list_goal):
     # heuristic is addition of difference between centers:
     counter = 0
     for i in range(0,len(list_goal)):
-        counter = sqrt( (list_centers[i][0] - list_goal[i][0])^2 + (list_centers[i][1] - list_goal[i][1])^2 ) + counter
+        counter = sqrt( (list_centers[i][0] - list_goal[i][0])**2 + (list_centers[i][1] - list_goal[i][1])**2 ) + counter
     return counter
+
+# -------------------------------------------------------------------------
+#  Function: calc_centroid
+#  Description: Given a list of vertices, calculates centroids.
+# -------------------------------------------------------------------------
+def calc_centroid(list_of_lists):
+    centroid = []
+    for i in range(0,len(list_of_lists)):
+        counter0 = 0
+        counter1 = 0
+        num = 0
+        for j in range(0,len(list_of_lists[i])):
+            counter0 = list_of_lists[i][j][0] + counter0
+            counter1 = list_of_lists[i][j][1] + counter1
+            num = num + 1
+        centroid.append([counter0/num, counter1/num])
+    return centroid
 
 # -------------------------------------------------------------------------------------------
 #  Function: main
@@ -72,7 +89,9 @@ def main():
     # inputs, user defined:
     list_init_centers  = []
     list_init_vertices = []
-    list_goal          = [[50*sqrt(2), 50*sqrt(2)],[2,2],[3,3],[4,4],[5,5],[6,6]]
+    list_goal          = [[0.7071067811865476, 0.7071067811865476],
+                          [1.1785113019775793, 1.1785113019775793],
+                          [1.4142135623730951, 0.23570226039551587]]
     list_tangram       = [[0,sqrt(2)/2]        , [sqrt(2)/2,0]               ,[sqrt(2)/2+sqrt(2), 0],
                           [2*sqrt(2),sqrt(2)/2], [sqrt(2)/2+sqrt(2), sqrt(2)],[sqrt(2)/2,sqrt(2)]]
     # derive initial cost based on initial state.
@@ -132,10 +151,13 @@ def main():
             firstpass = True
             for child in children:
                 if child not in graph_vertices.values():
-                    # add children states to graph_nodes
+                    # add children states to graph_vertices
                     graph_vertices[idx + child_idx] = child
+                    # add the centers:
+                    child_centers = calc_centroid(child)
+                    graph_centers[idx + child_idx] = child_centers
                     # add the respective heuristic cost:
-                    heuristic_cost[idx + child_idx] = heuristic(child, list_goal)
+                    heuristic_cost[idx + child_idx] = heuristic(child_centers, list_goal)
                     # create edges within graph1.
                     if firstpass:
                         graph1[current_head] = [idx + child_idx]

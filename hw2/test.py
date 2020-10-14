@@ -1,39 +1,25 @@
 from math import sqrt
+from p7_triag1 import Triangle1
+import matplotlib.pyplot as plt
 # assume all
 
-class Square:
-    # default constructor for square
-    def __init__(self, tangram_vertices):
-        self.vertices = [[0,0],[1,0],[0,1],[1,1]]
-        self.tangram_vertices = tangram_vertices
-
-    def get_centroid(self):
-        return 0
-
-    def get_possible_moves(self):
-        return 0
-
-class Triangle1:
-    # default constructor for triangle1:
-    def __init__(self, tangram_vertices):
-        self.vertices = [[0,0],[1,0],[0,1]]
-        self.tangram_vertices = tangram_vertices
-    def get_centroid(self):
-        return 0
-    def get_possible_moves(self,list_vertices):
-        list_possible_moves = []
 
 def main():
-    list = [[0,0]]
-    list.append([1,1])
-    print(list)
-    tangram_vertices = [[0,0],[2,0],[0,2],[2,2]]
-    triag1 = Triangle1(tangram_vertices)
-    square = Square(tangram_vertices)
+    list_tangram       = [[0,sqrt(2)/2]        , [sqrt(2)/2,0]               ,[sqrt(2)/2+sqrt(2), 0],
+                          [2*sqrt(2),sqrt(2)/2], [sqrt(2)/2+sqrt(2), sqrt(2)],[sqrt(2)/2,sqrt(2)]]
+    triag1 = Triangle1([],list_tangram)
+    x_vals = [triag1.triag1_vertices[0][0], triag1.triag1_vertices[1][0], triag1.triag1_vertices[2][0], triag1.triag1_vertices[0][0]]
+    y_vals = [triag1.triag1_vertices[0][1], triag1.triag1_vertices[1][1], triag1.triag1_vertices[2][1], triag1.triag1_vertices[0][1]]
+    plt.plot(x_vals, y_vals)
 
-    # expand? need current state of vertices to get possible moves.
-    # also what shapes have already been used? the expansion should include all possible rotations of all remaining shapes.
+    triag1.rotate45()
+    triag1.rotate45()
+
+    x_vals = [triag1.triag1_vertices[0][0], triag1.triag1_vertices[1][0], triag1.triag1_vertices[2][0], triag1.triag1_vertices[0][0]]
+    y_vals = [triag1.triag1_vertices[0][1], triag1.triag1_vertices[1][1], triag1.triag1_vertices[2][1], triag1.triag1_vertices[0][1]]
+    plt.plot(x_vals, y_vals)
 
 
+    plt.show()
 if __name__ == "__main__":
     main()

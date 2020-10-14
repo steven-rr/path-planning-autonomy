@@ -113,9 +113,9 @@ class Square:
         # reset and rotate vertices
         self.reset()
         self.rotate()
-        possible_moves = self.possible_moves_in[:]
+        possible_moves = self.possible_moves[:]
         # derive x limits due to tangram perimeter geometry.
-        self.max_x_tangram_rotated = self.tangram_vertices[2][0] - sqrt(2)*self.square_vertices[1][0]
+        self.max_x_tangram_rotated = self.tangram_vertices[2][0] - self.square_vertices[3][0]
         # check if square can fit inside tangram geometry
         if self.max_x_tangram_rotated > self.max_x > self.min_x_tangram:
             # interaction between rotated square and triangle
@@ -124,6 +124,8 @@ class Square:
         elif self.max_x == 0:
             possible_moves.append(self.square_vertices)
 
+        # update class variable possible moves.
+        self.possible_moves = possible_moves
     # -------------------------------------------------------------------------
     #  Function: static_square_moves
     #  Description: Derives all possible moves for a non-rotated square
