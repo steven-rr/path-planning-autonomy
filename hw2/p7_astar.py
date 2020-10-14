@@ -165,33 +165,40 @@ def generate_coords(idx_in):
     return coords_out
 
 # -------------------------------------------------------------------------
-#  Function: heuristic2
+#  Function: calc_centroid
 #  Description: Given a list of tiles, outputs the manhattan distance between
 #               all tiles. This is used as a heuristic for A*
 # -------------------------------------------------------------------------
-def heuristic2(list_in, list_goal):
-    counter = 0
-    for i in range(0,len(list_in)):
-        if list_in[i] != list_goal[i]:
-            idx = list_in.index(list_goal[i])
-            coords_goal = generate_coords(i)
-            coords_actual = generate_coords(idx)
-            diff_horizontal = abs(coords_goal[0] - coords_actual[0])
-            diff_vertical = abs(coords_goal[1] - coords_actual[1])
-            counter = counter + diff_horizontal + diff_vertical
-    return counter
+def calc_centroid(list_vertices_in):
+    centroid = []
+    if len(list_vertices_in) == 3:
+        centroid[0] = 1.0;
+        centroid[1] = 2.0;
+    elif len(list_vertices_in) == 4:
+        centroid[0] = 3.0;
+        centroid[1] = 4.0;
+    elif len(list_vertices_in) == 5:
+        centroid[0] = 6.0;
+        centroid[1] = 7.0;
+    return centroid
+
 
 # -------------------------------------------------------------------------
 #  Function: heuristic
-#  Description: Given a list of tiles, returns the heuristic cost based on
-#               mode.
+#  Description: Given a list of centers, computes difference (norm) between
+#               current centers and desired centers.
 # -------------------------------------------------------------------------
-def heuristic(list_in, list_goal, mode_in):
+def heuristic(list_centers, list_goal):
+
+    # if list_centers not full of shapes, assume remaining centers in the middle.
+    diff_length = len(list_goal) - len(list_centers)
+    for i in range(0,diff_length):
+        list_centers[ len(list_goal) + i] = [5,5]
+
+    # heuristic is addition of difference between centers:
     counter = 0
-    j = 6
-    for i in range(0,len(list_in)):
-        (list_in[i][0] - list_goal[i][0])
-        j = j -1
+    for i in range(0,len(list_goal)):
+        counter = sqrt( (list_centers[i][0] - list_goal[i][0])^2 + (list_centers[i][1] - list_goal[i][1])^2 ) + counter
     return counter
 
 # -------------------------------------------------------------------------------------------
@@ -204,22 +211,29 @@ def heuristic(list_in, list_goal, mode_in):
 # ----------------------------------------------------------------------------------------------
 def main():
     # inputs, user defined:
-    list_init_state = []
+    list_init_centers  = []
     list_init_vertices = []
-    list_goal       = [[50*sqrt(2), 50*sqrt(2)],]
-    heuristic_mode = 2
+    list_goal          = [[50*sqrt(2), 50*sqrt(2)],[2,2],[3,3],[4,4],[5,5],[6,6]]
 
     # derive initial cost based on initial state.
-    cost_init = heuristic(list_init_state, list_goal, heuristic_mode)
+    cost_init = heuristic(list_init_centers, list_goal)
 
     # initialize graph1 dictionary, graph node dictionary, and heuristic cost dictionary.
-    # graph1: defines connectivity between nodes
-    # graph node dictionary: defines where the centers of each shape is, for heuristic computation.
+    # graph1: defines connectivity between nodes.
+    # graph centers dictionary: defines where the centers of each shape is, for heuristic computation.
     # graph vertices dict: defines where the vertices of each shape is.
+    # graph shapes dict: defines what shapes have been used so far.
+    #           0 = Square
+    #           1 = Big Triangle.
+    #           2 = Big Triangle.
+    #           3 = Medium Triangle.
+    #           4 = Small Triangle.
+    #           5 = Combo
     # heuristic cost dictionary: defines what the heuristic cost is for each node.
     graph1 = {}
-    graph_nodes = {1:list_init_state}
+    graph_centers = {1:list_init_centers}
     graph_vertices = {1: list_init_vertices}
+    graph_shapes = {1:[]}
     heuristic_cost = {1: cost_init}
 
     #perform Astar search on the graph.
