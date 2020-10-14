@@ -15,6 +15,7 @@
 # ////////////////////////////////////////////////////////////////////////////
 
 from math import sqrt
+from copy import deepcopy
 
 
 class Triangle1:
@@ -46,29 +47,22 @@ class Triangle1:
 
     def rotate45(self):
         self.calc_centroid()
-        triag1_vertices = self.triag1_vertices[:]
-        print("area1: " , self.calc_area(triag1_vertices) )
+        triag1_vertices = deepcopy(self.triag1_vertices)
 
         # shift origin to centroid
         for i in range(0, len(triag1_vertices)):
             triag1_vertices[i][0] = triag1_vertices[i][0] - self.centroid[0]
             triag1_vertices[i][1] = triag1_vertices[i][1] - self.centroid[1]
-        print("area2: " , self.calc_area(triag1_vertices))
 
         # rotate by using rotate matrix.
         for i in range(0, len(triag1_vertices)):
-            print("mag0: ", sqrt( (triag1_vertices[i][0] )**2 + (triag1_vertices[i][1])**2))
-            self.triag1_vertices[i][0] = (sqrt(2)/2)*(triag1_vertices[i][0] - triag1_vertices[i][1])
-            self.triag1_vertices[i][1] = (sqrt(2)/2)*(triag1_vertices[i][1] + triag1_vertices[i][0])
-            print("mag0: ", sqrt( (triag1_vertices[i][0] )**2 + (triag1_vertices[i][1])**2))
-        print("area3: " , self.calc_area(self.triag1_vertices))
+            self.triag1_vertices[i][0] = (sqrt(2)/2)*(triag1_vertices[i][0] + triag1_vertices[i][1])
+            self.triag1_vertices[i][1] = (sqrt(2)/2)*(triag1_vertices[i][1] - triag1_vertices[i][0])
 
         # shift origin back.
         for i in range(0, len(triag1_vertices)):
             self.triag1_vertices[i][0] = self.centroid[0] + self.triag1_vertices[i][0]
             self.triag1_vertices[i][1] = self.centroid[1] + self.triag1_vertices[i][1]
-        print("area4: " , self.calc_area(self.triag1_vertices))
-        print("")
         return self.triag1_vertices
 
 

@@ -15,7 +15,7 @@
 # ////////////////////////////////////////////////////////////////////////////
 
 from math import sqrt
-
+from copy import deepcopy
 
 # -------------------------------------------------------------------------
 #  Class : Square
@@ -62,7 +62,7 @@ class Square:
     #  Description: Derives all possible moves when close to a triangle.
     # -------------------------------------------------------------------------
     def get_interaction_triangle(self, max_x, max_x_idx):
-        possible_moves = self.possible_moves_in[:]
+        possible_moves = deepcopy(self.possible_moves)
         # determine if triangle has flat surface or slanted surface:
         counter = 0
         for i in range(self.list_vertices[max_x_idx[0]]):
@@ -113,7 +113,7 @@ class Square:
         # reset and rotate vertices
         self.reset()
         self.rotate()
-        possible_moves = self.possible_moves[:]
+        possible_moves = deepcopy(self.possible_moves)
         # derive x limits due to tangram perimeter geometry.
         self.max_x_tangram_rotated = self.tangram_vertices[2][0] - self.square_vertices[3][0]
         # check if square can fit inside tangram geometry
@@ -133,7 +133,7 @@ class Square:
     #               without exceeding any bounds.
     # -------------------------------------------------------------------------
     def static_square_moves(self):
-        possible_moves = self.list_vertices[:]
+        possible_moves = deepcopy(self.list_vertices)
         # derive x limit due to shape geometry.
         if self.list_vertices != []:
             for i in range(0, self.list_vertices):
@@ -165,7 +165,7 @@ class Square:
     # -------------------------------------------------------------------------
     def get_possible_moves(self):
         # container to return possible moves
-        self.possible_moves = self.list_vertices[:]
+        self.possible_moves = deepcopy(self.list_vertices)
 
         ####### First do all possible moves assuming non-rotated square ######
         self.static_square_moves()

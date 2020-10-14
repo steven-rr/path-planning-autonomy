@@ -13,13 +13,16 @@ def main():
     plt.plot(x_vals, y_vals)
 
     triag1.rotate45()
-    triag1.rotate45()
-
     x_vals = [triag1.triag1_vertices[0][0], triag1.triag1_vertices[1][0], triag1.triag1_vertices[2][0], triag1.triag1_vertices[0][0]]
     y_vals = [triag1.triag1_vertices[0][1], triag1.triag1_vertices[1][1], triag1.triag1_vertices[2][1], triag1.triag1_vertices[0][1]]
     plt.plot(x_vals, y_vals)
 
+    triag1.rotate45()
+    x_vals = [triag1.triag1_vertices[0][0], triag1.triag1_vertices[1][0], triag1.triag1_vertices[2][0], triag1.triag1_vertices[0][0]]
+    y_vals = [triag1.triag1_vertices[0][1], triag1.triag1_vertices[1][1], triag1.triag1_vertices[2][1], triag1.triag1_vertices[0][1]]
+    plt.plot(x_vals, y_vals)
 
     plt.show()
+
 if __name__ == "__main__":
     main()
