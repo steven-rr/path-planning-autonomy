@@ -24,6 +24,9 @@ class Triangle1:
         list_possible_moves = []
 
 def main():
+    list = [[0,0]]
+    list.append([1,1])
+    print(list)
     tangram_vertices = [[0,0],[2,0],[0,2],[2,2]]
     triag1 = Triangle1(tangram_vertices)
     square = Square(tangram_vertices)

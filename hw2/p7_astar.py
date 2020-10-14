@@ -6,9 +6,7 @@
 # //| File Name : p7_astar.py
 # //|
 # //| Description : Solves a convex tangram puzzle using A*.
-# //|               Heuristic options: 1) Number of misplaced tiles.
-# //|                                  2) Manhattan distance difference between
-# //|                                     current state and goal state
+# //|               Heuristic involves difference between centers of shapes.
 # //|
 # //| Notes : Future work can include making a class so main() is less cluttered
 # //|
@@ -18,66 +16,15 @@
 # ////////////////////////////////////////////////////////////////////////////
 
 from math import sqrt
+from p7_square import Square
 
-# -------------------------------------------------------------------------
-#  Function: move_right
-#  Description: Given a list of tiles, outputs result tiles from
-#               moving empty space to the right
-# -------------------------------------------------------------------------
-def move_right(list_in, idx_in):
-    list_result = list_in[:]
-    list_result[idx_in] = list_in[idx_in + 1]
-    list_result[idx_in + 1] = 0
-    return list_result
 
-# -------------------------------------------------------------------------
-#  Function: move_left
-#  Description: Given a list of tiles, outputs result tiles from
-#               moving empty space to the left
-# -------------------------------------------------------------------------
-def move_left(list_in ,idx_in):
-    list_result = list_in[:]
-    list_result[idx_in] = list_in[idx_in - 1]
-    list_result[idx_in - 1] = 0
-    return list_result
-
-# -------------------------------------------------------------------------
-#  Function: move_down
-#  Description: Given a list of tiles, outputs result tiles from
-#               moving empty space downward
-# -------------------------------------------------------------------------
-def move_down(list_in, idx_in):
-    list_result = list_in[:]
-    list_result[idx_in] = list_in[idx_in + 3]
-    list_result[idx_in + 3] = 0
-    return list_result
-
-# -------------------------------------------------------------------------
-#  Function: move_up
-#  Description: Given a list of tiles, outputs result tiles from
-#               moving empty space upward
-# -------------------------------------------------------------------------
-def move_up(list_in, idx_in):
-    list_result = list_in[:]
-    list_result[idx_in] = list_in[idx_in - 3]
-    list_result[idx_in - 3] = 0
-    return list_result
-# -------------------------------------------------------------------------
-#  Class : Square
-#  Description: Holds functions for expanding squares.
-# -------------------------------------------------------------------------
-class Square:
-    # default constructor for square
-    def __init__(self, graph_vertices, tangram_vertices):
-        self.square_vertices = [[0,0],[1,0],[0,1],[1,1]]
+class Triangle1:
+    # default constructor for triangle1:
+    def __init__(self, list_vertices, tangram_vertices):
+        self.triangle_vertices = [[0, 0], [1, 0], [0, 1], [1, 1]]
         self.tangram_vertices = tangram_vertices
-        self.graph_vertices = graph_vertices
-    def get_centroid(self):
-        return 0
-
-    def get_possible_moves(self):
-        return 0
-
+        self.list_vertices = list_vertices
 # -------------------------------------------------------------------------
 #  Function: move
 #  Description: Given a list of vertices, shapes used, and tangram configuration,
@@ -87,6 +34,7 @@ def move(list_vertices, list_tangram, list_shapes):
     for shape in list_shapes:
         if shape == 0:
             square1 = Square(list_vertices, list_tangram)
+            square1.get_possible_moves()
 
 
 
