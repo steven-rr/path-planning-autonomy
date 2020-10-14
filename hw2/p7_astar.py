@@ -17,26 +17,29 @@
 
 from math import sqrt
 from p7_square import Square
+from p7_triag1 import Triangle1
 
 
-class Triangle1:
-    # default constructor for triangle1:
-    def __init__(self, list_vertices, tangram_vertices):
-        self.triangle_vertices = [[0, 0], [1, 0], [0, 1], [1, 1]]
-        self.tangram_vertices = tangram_vertices
-        self.list_vertices = list_vertices
 # -------------------------------------------------------------------------
 #  Function: move
 #  Description: Given a list of vertices, shapes used, and tangram configuration,
 #               returns all possible combinations next steps in a list of lists.
+    #           0 = Square
+    #           1 = Big Triangle.
+    #           2 = Big Triangle.
+    #           3 = Medium Triangle.
+    #           4 = Small Triangle.
+    #           5 = Combo
 # -------------------------------------------------------------------------
 def move(list_vertices, list_tangram, list_shapes):
+    possible_moves = list_vertices[:]
     for shape in list_shapes:
         if shape == 0:
             square1 = Square(list_vertices, list_tangram)
-            square1.get_possible_moves()
-
-
+            possible_moves.append(square1.get_possible_moves())
+        if shape == 1:
+            triag1 = Triangle1(list_vertices, list_tangram)
+            triag1.get_possible_moves()
 
 # -------------------------------------------------------------------------
 #  Function: heuristic
