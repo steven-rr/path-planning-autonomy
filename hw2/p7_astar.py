@@ -5,7 +5,7 @@
 # //|
 # //| File Name : p7_astar.py
 # //|
-# //| Description : Solves the 8 puzzle problem using A*.
+# //| Description : Solves a convex tangram puzzle using A*.
 # //|               Heuristic options: 1) Number of misplaced tiles.
 # //|                                  2) Manhattan distance difference between
 # //|                                     current state and goal state
@@ -17,6 +17,7 @@
 # //|
 # ////////////////////////////////////////////////////////////////////////////
 
+from math import sqrt
 
 # -------------------------------------------------------------------------
 #  Function: move_right
@@ -186,10 +187,12 @@ def heuristic2(list_in, list_goal):
 #               mode.
 # -------------------------------------------------------------------------
 def heuristic(list_in, list_goal, mode_in):
-    if mode_in == 1:
-        return heuristic1(list_in, list_goal)
-    elif mode_in == 2:
-        return heuristic2(list_in, list_goal)
+    counter = 0
+    j = 6
+    for i in range(0,len(list_in)):
+        (list_in[i][0] - list_goal[i][0])
+        j = j -1
+    return counter
 
 # -------------------------------------------------------------------------------------------
 #  Function: main
@@ -201,8 +204,9 @@ def heuristic(list_in, list_goal, mode_in):
 # ----------------------------------------------------------------------------------------------
 def main():
     # inputs, user defined:
-    list_init_state = [5, 4, 0, 6, 1, 8, 7, 3, 2]
-    list_goal       = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+    list_init_state = []
+    list_init_vertices = []
+    list_goal       = [[50*sqrt(2), 50*sqrt(2)],]
     heuristic_mode = 2
 
     # derive initial cost based on initial state.
@@ -210,10 +214,12 @@ def main():
 
     # initialize graph1 dictionary, graph node dictionary, and heuristic cost dictionary.
     # graph1: defines connectivity between nodes
-    # graph node dictionary: defines what "list" or "state" each node represents
+    # graph node dictionary: defines where the centers of each shape is, for heuristic computation.
+    # graph vertices dict: defines where the vertices of each shape is.
     # heuristic cost dictionary: defines what the heuristic cost is for each node.
     graph1 = {}
     graph_nodes = {1:list_init_state}
+    graph_vertices = {1: list_init_vertices}
     heuristic_cost = {1: cost_init}
 
     #perform Astar search on the graph.
