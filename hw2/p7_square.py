@@ -171,4 +171,6 @@ class Square:
         ####### Second do all possible moves assuming rotated square ######
         self.rotated_square_moves()
 
+        # reset square back to normal vertices.
+        self.reset()
         return self.possible_moves

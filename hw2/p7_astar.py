@@ -36,11 +36,12 @@ def move(list_vertices, list_tangram, list_shapes):
     for shape in list_shapes:
         if shape == 0:
             square1 = Square(list_vertices, list_tangram)
-            possible_moves.append(square1.get_possible_moves())
+            possible_moves = square1.get_possible_moves()
         if shape == 1:
             triag1 = Triangle1(list_vertices, list_tangram)
             triag1.get_possible_moves()
 
+    return possible_moves
 # -------------------------------------------------------------------------
 #  Function: heuristic
 #  Description: Given a list of centers, computes difference (norm) between
@@ -72,9 +73,10 @@ def main():
     list_init_centers  = []
     list_init_vertices = []
     list_goal          = [[50*sqrt(2), 50*sqrt(2)],[2,2],[3,3],[4,4],[5,5],[6,6]]
-
+    list_tangram       = [[0,sqrt(2)/2]        , [sqrt(2)/2,0]               ,[sqrt(2)/2+sqrt(2), 0],
+                          [2*sqrt(2),sqrt(2)/2], [sqrt(2)/2+sqrt(2), sqrt(2)],[sqrt(2)/2,sqrt(2)]]
     # derive initial cost based on initial state.
-    cost_init = heuristic(list_init_centers, list_goal)
+    cost_init = heuristic(list_tangram, list_goal)
 
     # initialize graph1 dictionary, graph node dictionary, and heuristic cost dictionary.
     # graph1: defines connectivity between nodes.
@@ -123,17 +125,17 @@ def main():
         else:
             expanded.append(current_head)
             # all possible moves:
-            children = move(graph_nodes[current_head])
+            children = move(graph_vertices[current_head], list_tangram, graph_shapes[current_head])
             #now append as new nodes to graph1:
-            idx = len(graph_nodes)
+            idx = len(graph_vertices)
             child_idx = 1
             firstpass = True
             for child in children:
-                if child not in graph_nodes.values():
+                if child not in graph_vertices.values():
                     # add children states to graph_nodes
-                    graph_nodes[idx + child_idx] = child
+                    graph_vertices[idx + child_idx] = child
                     # add the respective heuristic cost:
-                    heuristic_cost[idx + child_idx] = heuristic(child, list_goal, heuristic_mode)
+                    heuristic_cost[idx + child_idx] = heuristic(child, list_goal)
                     # create edges within graph1.
                     if firstpass:
                         graph1[current_head] = [idx + child_idx]
