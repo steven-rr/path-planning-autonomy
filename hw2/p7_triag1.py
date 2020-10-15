@@ -92,7 +92,7 @@ class Triangle1:
     #               If out of bounds, return false. else return true.
     # -------------------------------------------------------------------------
     def check_triag_tangram_bound(self):
-        y0_max = tangram_vertices[4][1]
+        y0_max = self.tangram_vertices[4][1]
         y0_min = 0
         # check if vertices are before or after the middle portion , else just eliminate any triangles
         for i in range(0, len(self.triag1_vertices)):
@@ -136,10 +136,23 @@ class Triangle1:
     #               If out of bounds, return false. else return true.
     # -------------------------------------------------------------------------
     def check_triag_shape_bound(self):
+        max_y_square =0
+        min_y_square =0
+        max_x_square =0
+        min_x_square =0
+
+        counter_square = 0
         for i in range(0, len(self.list_vertices)):
-            # square interaction
-            if len(self.list_vertices[i]]) == 4:
+            # square interaction:
+            if len(self.list_vertices[i]) == 4:
                 for j in range(0, len(self.list_vertices[i])):
+                    if self.list_vertices[i][j][1] > max_y_square :
+                        max_y_square = self.list_vertices[i][j][1]
+                        counter_square = counter_square + 1
+                    if self.list_vertices[i][j][1] < min_y_square:
+                        min_y_square = self.list_vertices[i][j][1]
+                    if self.list_vertices[i][j][1]
+
             # triangle interaction:
             elif len(self.list_verices[i]) == 3:
 
@@ -200,7 +213,7 @@ class Triangle1:
                 self.triag1_vertices[i][1] = self.triag1_vertices[i][1] + diffy
 
             # check if triangle vertices are out of bound. if out of bounds, return no possible moves.
-            check1 = check_triag_tangram_bound()
+            check1 = self.check_triag_tangram_bound()
             if not check1:
                 return
 
