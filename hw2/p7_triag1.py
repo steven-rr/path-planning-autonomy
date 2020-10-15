@@ -29,6 +29,9 @@ class Triangle1:
         self.max_x_idx = [0, 0]
         self.max_x_tangram = 0
         self.min_x_tangram = 0
+        self.max_y = 0
+        self.max_y_idx = 0
+        self.max_y_idx_2 = [0, 0]
         self.centroid = 0
         self.area = 0
     def calc_centroid(self):
@@ -65,7 +68,45 @@ class Triangle1:
             self.triag1_vertices[i][1] = self.centroid[1] + self.triag1_vertices[i][1]
         return self.triag1_vertices
 
+    # for top, align top vertex with the top vertex for shape. Then see if there is interference. If not, that's good.
+    def triag_interaction_flat(self):
+        list_shapes = deepcopy(self.list_vertices)
+
+    #if no
+    # to modify y: get top vertex of triangle, and align it with top of tangram.
+    # to modify x: get top, outermost, vertex of shape vertices and align it with triangle.
+    # if it fits, put in the triangle, if not, don't.
+    # if empty, fit pointy vertex  with left most tangram, else just quit.
+    def triag_interaction_slanted(self):
+        list_shapes = deepcopy(self.list_vertices)
+        # just work with tangram limits:
+        if list_shapes == []:
+
+        else:
+            # get the max value of y across all vertices.
+            for i in range(0,len(self.triag1_vertices)):
+                if self.max_y < self.triag1_vertices[i][1]:
+                    self.max_y = self.triag1_vertices[i][1]
+
+            # check if more than one vertex are aligned with a max y.
+            counter = 0
+            for i in range(0, len(self.triag1_vertices)):
+                if self.triag1_vertices[i][1] == self.max_y:
+                    counter = counter + 1
+                    self.max_y_idx = i
+                    if counter > 1:
+                        if self.triag1_vertices[i][0] < self.triag1_vertices[self.max_y_idx][0]:
+                            self.max_y_idx = i
+
+            # get max value of y across all shapes:
+
+
+    def triag_interaction(self):
+
 
     def get_possible_moves(self):
-        self.possible_moves = self.list_vertices[:]
+        self.possible_moves = deepcopy(self.list_vertices)
+        # rotating triangle has 8 moves.
+
+
         return self.possible_moves
