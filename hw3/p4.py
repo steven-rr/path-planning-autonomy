@@ -235,8 +235,6 @@ def main():
     goal= [2,8]
     O = [[1,1],[1,6],[3,4],[4,4],[4,5],[4,8],[5,2],[6,2],[6,6],[7,6]]
     gam = 0.95
-    U = {}
-    V = 0
     R = reward(O, goal)
     # states
 
@@ -282,9 +280,29 @@ def main():
 
     # instantiate mdp probabilities.
     mdp_probability = probability_transition(arrow_map,arrow_probability_up, arrow_probability_down, arrow_probability_left, arrow_probability_right)
+
+    # instantiate and initialize value function:
+    V  = {}
+    V_ = {}
+    for i in range(0, len(states)):
+        V[i] = 0
+        V_[i] = 0
+
+    # Value Iteration:
     counter = 0
     while True:
+        # for each state s in S do
+        for i in range(0, len(states)):
+            # Compute max utility for the current state, search over all possible actions
+            current_poss_actions = possible_actions[states[i]]
+            max_util = 0
+            for j in range(0, len(current_poss_actions)):
+                util = V[states[i]] * mdp_probability.compute_probability(current_actions, states[i],current_poss_actions[i])
+                if util > max_util:
+                    max_util = util
 
+            # update V'. Reward plus max utility.
+            V_[i] = reward.compute_reward(states[i]) + gam*max_util
 
         # prevent from breaking.
         counter = counter + 1
