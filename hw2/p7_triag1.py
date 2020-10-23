@@ -151,10 +151,12 @@ class Triangle1:
                         counter_square = counter_square + 1
                     if self.list_vertices[i][j][1] < min_y_square:
                         min_y_square = self.list_vertices[i][j][1]
-                    if self.list_vertices[i][j][1]
+                    if self.list_vertices[i][j][1]:
+                        return 0
 
             # triangle interaction:
             elif len(self.list_verices[i]) == 3:
+                return 0
 
 
 
@@ -178,6 +180,7 @@ class Triangle1:
         # just work with tangram limits:
         if list_shapes == []:
             #place the triangle in the tangram .
+            return 0
         else:
             # get top and left most vertex of the triangle
             # check if more than one vertex are aligned with a max y. if so, choose the vertex with smaller x. (left most)
