@@ -5,7 +5,7 @@
 # //|
 # //| File Name : p4.py
 # //|
-# //| Description : Solves MDP using value iteration
+# //| Description : Solves MDP using policy iteration
 # //|
 # //| Notes :
 # //|
@@ -325,19 +325,39 @@ def main():
         V[i] = 0
         V_[i] = 0
 
-    # Value Iteration:
+    # Policy Iteration:
     counter = 0
-    epsilon = 0.2
-    delta = 10
+    # instantiate policy pi, initialize to always move states to the right, unless in the right edge. in that case, move left.
+    pi = {}
+    right_edge = [7, 15, 23, 31, 39, 47, 55, 63]
+    for i in range(0, len(states)):
+        if i in right_edge:
+            pi[i] = i - 1
+        else:
+            pi[i] = i + 1
+
+    # Begin Algorithm:
     while True:
         V = deepcopy(V_)
-        delta = 0
+        unchanged = True
+
+        # Evaluate policy here. 
+
         # for each state s in S do
         for i in range(0, len(states)):
             # Compute max utility for the current state, search over all possible actions
             current_poss_actions = possible_actions[i]
             util = 0
+
+            policy_util =  0
+            # Given state, and policy, loop thru all possible future states.
+            for k in range(0,len(current_poss_actions)):
+                future_state_direction = current_poss_actions[k]
+                future_state_index = compute_future_state_index(future_state_direction, i)
+                policy_util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i], pi[i])
+
             max_util = -1000
+            best_future_state_idx = 0
             # Given state, loop over possible actions
             for j in range(0, len(current_poss_actions)):
 
@@ -350,79 +370,83 @@ def main():
                 # if this current action gives higher utility than the max, then update max utility.
                 if util > max_util:
                     max_util = util
+                    best_future_state_idx = compute_future_state_index(current_poss_actions[j], i )
                 util = 0
 
-            # update V'. Reward plus max utility.
-            V_[i] = R.compute_reward(states[i]) + gam*max_util
-
-            # check for delta update.
-            if abs(V_[i] - V[i]) > delta:
-                delta = abs(V_[i] - V[i])
+            # if best action provided a better policy, update our policy to match the best one.
+            if max_util > policy_util:
+                pi[i] = best_future_state_idx
+                unchanged = False
 
         # once delta is small enough, we can exit.
-        if delta < (epsilon * (1 - gam) * (1 / gam)):
+        if unchanged:
             break
+
         # prevent from breaking.
         counter = counter + 1
         if counter > 100000:
             print("OVERLOAD!!!!!!")
             break
 
-    print("1) Finished Value Iteration!")
-    filename = "value_fx.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow([V_[0] , V_[1] , V_[2] ,  V_[3] , V_[4] , V_[5] , V_[6] ,  V_[7]])
-        csvwriter.writerow([V_[8] , V_[9] , V_[10],  V_[11], V_[12], V_[13], V_[14],  V_[15]])
-        csvwriter.writerow([V_[16], V_[17], V_[18],  V_[19], V_[20], V_[21], V_[22],  V_[23]])
-        csvwriter.writerow([V_[24], V_[25], V_[26],  V_[27], V_[28], V_[29], V_[30],  V_[31]])
-        csvwriter.writerow([V_[32], V_[33], V_[34],  V_[35], V_[36], V_[37], V_[38],  V_[39]])
-        csvwriter.writerow([V_[40], V_[41], V_[42],  V_[43], V_[44], V_[45], V_[46],  V_[47]])
-        csvwriter.writerow([V_[48], V_[49], V_[50],  V_[51], V_[52], V_[53], V_[54],  V_[55]])
-        csvwriter.writerow([V_[56], V_[57], V_[58],  V_[59], V_[60], V_[61], V_[62],  V_[63]])
-    print("2) Output value function grid to: ", filename)
-    print("")
-    print("Time to back out the policy...")
-    print("")
-    # get back the policy:
-    x = compute_state_index(x_init,states)
-    x_goal = compute_state_index(goal, states)
-    x_list = [x]
-    counter = 0
-    while True:
-        current_poss_actions = possible_actions[x]
-        # check through all possible actions of the current state, which action provides the best new state.
-        V_best = -1000
-        x_best = 0
-        for i in range(0, len(current_poss_actions)):
-            poss_state = compute_future_state_index(current_poss_actions[i], x)
-            # don't revisit states in list.
-            if poss_state not in x_list:
-                if V[poss_state] > V_best:
-                    V_best = V[poss_state]
-                    x_best = poss_state
+    print("1) Finished Policy Iteration!")
 
-        #update x to be the one with the biggest value.
-        x = x_best
-        x_list.append(x_best)
 
-        #stop when state reached goal.
-        if x == x_goal:
-            print("I reached the goal!")
-            break
+    # filename = "value_fx.csv"
+    # with open(filename, 'w') as csvfile:
+    #     csvwriter = csv.writer(csvfile)
+    #     csvwriter.writerow([V_[0] , V_[1] , V_[2] ,  V_[3] , V_[4] , V_[5] , V_[6] ,  V_[7]])
+    #     csvwriter.writerow([V_[8] , V_[9] , V_[10],  V_[11], V_[12], V_[13], V_[14],  V_[15]])
+    #     csvwriter.writerow([V_[16], V_[17], V_[18],  V_[19], V_[20], V_[21], V_[22],  V_[23]])
+    #     csvwriter.writerow([V_[24], V_[25], V_[26],  V_[27], V_[28], V_[29], V_[30],  V_[31]])
+    #     csvwriter.writerow([V_[32], V_[33], V_[34],  V_[35], V_[36], V_[37], V_[38],  V_[39]])
+    #     csvwriter.writerow([V_[40], V_[41], V_[42],  V_[43], V_[44], V_[45], V_[46],  V_[47]])
+    #     csvwriter.writerow([V_[48], V_[49], V_[50],  V_[51], V_[52], V_[53], V_[54],  V_[55]])
+    #     csvwriter.writerow([V_[56], V_[57], V_[58],  V_[59], V_[60], V_[61], V_[62],  V_[63]])
+    # print("2) Output value function grid to: ", filename)
+    # print("")
+    # print("Time to back out the policy...")
+    # print("")
 
-        #prevent overflow
-        counter = counter + 1
-        if counter > 100000:
-            print("OVERFLOW!!!!!!!!")
-            break
-
-    #convert state indices to state tuples.
-    x_final = []
-    print("3) Policy is as follows: ")
-    for i in range(0, len(x_list)):
-        x_final.append(states[x_list[i]])
-        print(i + 1, ". ", x_final[i])
-    print("Reached goal in: ", len(x_list), "steps.")
+    #
+    # # get back the policy:
+    # x = compute_state_index(x_init,states)
+    # x_goal = compute_state_index(goal, states)
+    # x_list = [x]
+    # counter = 0
+    # while True:
+    #     current_poss_actions = possible_actions[x]
+    #     # check through all possible actions of the current state, which action provides the best new state.
+    #     V_best = -1000
+    #     x_best = 0
+    #     for i in range(0, len(current_poss_actions)):
+    #         poss_state = compute_future_state_index(current_poss_actions[i], x)
+    #         # don't revisit states in list.
+    #         if poss_state not in x_list:
+    #             if V[poss_state] > V_best:
+    #                 V_best = V[poss_state]
+    #                 x_best = poss_state
+    #
+    #     #update x to be the one with the biggest value.
+    #     x = x_best
+    #     x_list.append(x_best)
+    #
+    #     #stop when state reached goal.
+    #     if x == x_goal:
+    #         print("I reached the goal!")
+    #         break
+    #
+    #     #prevent overflow
+    #     counter = counter + 1
+    #     if counter > 100000:
+    #         print("OVERFLOW!!!!!!!!")
+    #         break
+    #
+    # #convert state indices to state tuples.
+    # x_final = []
+    # print("3) Policy is as follows: ")
+    # for i in range(0, len(x_list)):
+    #     x_final.append(states[x_list[i]])
+    #     print(i + 1, ". ", x_final[i])
+    # print("Reached goal in: ", len(x_list), "steps.")
 if __name__ == "__main__":
     main()
