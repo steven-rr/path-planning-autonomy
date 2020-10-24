@@ -16,6 +16,8 @@
 
 from copy import deepcopy
 import csv
+import numpy as np
+
 # -------------------------------------------------------------------------
 #  Class : Probability transition
 #  Description: Holds transition probabilities.
@@ -206,6 +208,20 @@ class probability_transition():
         elif direction == "R":
             probability_return = self.compute_probability_right_arrow(future_state_direction, action)
         return probability_return
+
+# -------------------------------------------------------------------------
+#  Class : compute_policy_evaluation
+#  Description: Given future state direction, and index, it returns future index.
+# ------------------------------------------------------------------------
+def compute_policy_evaluation(pi, U, states,possible_actions):
+    # for each state calculate a value iteration.
+
+    for i in range(0 , len(states)):
+        current_poss_actions = possible_actions[i]
+    
+
+
+    return 0
 
 # -------------------------------------------------------------------------
 #  Class : compute_init_index

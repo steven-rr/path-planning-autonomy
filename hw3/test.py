@@ -14,18 +14,10 @@
 # //|
 # ////////////////////////////////////////////////////////////////////////////
 
+import numpy as np
 def main():
 
-    dict = {(2,3): "D", (1,1): "L"}
-    dict[(2,1)] = "U"
-    state = [2,3]
-    # print(dict[(state[0], state[1])])
-    # print(dict[(2,1)])
-    x = ["D","U", "R"]
-    y = "U"
-    if y in x:
-        print("this works!", y)
-    x = abs(10)
-    print(x,x,x)
+    x = np.array([1,2])
+    print(x[0])
 if __name__ == "__main__":
     main()
