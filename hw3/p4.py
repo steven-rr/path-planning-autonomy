@@ -414,6 +414,7 @@ def main():
         #prevent overflow
         counter = counter + 1
         if counter > 100000:
+            print("OVERFLOW!!!!!!!!")
             break
 
     #convert state indices to state tuples.
