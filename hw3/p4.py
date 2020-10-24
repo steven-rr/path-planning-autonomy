@@ -15,6 +15,7 @@
 # ////////////////////////////////////////////////////////////////////////////
 
 from copy import deepcopy
+import csv
 # -------------------------------------------------------------------------
 #  Class : Probability transition
 #  Description: Holds transition probabilities.
@@ -207,6 +208,13 @@ class probability_transition():
         return probability_return
 
 # -------------------------------------------------------------------------
+#  Class : compute_init_index
+#  Description: Given future state direction, and index, it returns future index.
+# ------------------------------------------------------------------------
+def compute_state_index(x_state_tuple, states):
+    x_init_idx = list(states.keys())[list(states.values()).index(x_state_tuple)]
+    return x_init_idx
+# -------------------------------------------------------------------------
 #  Class : Reward
 #  Description: Given future state direction, and index, it returns future index.
 # ------------------------------------------------------------------------
@@ -255,7 +263,7 @@ class reward():
 #               R      = reward.
 # ------------------------------------------------------------------------
 def main():
-    x_init = [7,1]
+    x_init = (8,1)
     goal= (2,8)
     O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
@@ -281,8 +289,8 @@ def main():
                            24:["U","R","D"],    25: ["all"],         26: ["all"],         27: ["all"],          28: ["all"],          29: ["all"],          30: ["all"],          31: ["U","L","D"],
                            32:["U","R","D"],    33: ["all"],         34: ["all"],         35: ["all"],          36: ["all"],          37: ["all"],          38: ["all"],          39: ["U","L","D"],
                            40:["U","R","D"],    41: ["all"],         42: ["all"],         43: ["all"],          44: ["all"],          45: ["all"],          46: ["all"],          47: ["U","L","D"],
-                           48:["U","R","D"],    49: ["all"],         50: ["all"],         51: ["all"],          52: ["all"],          53: ["all"],          54: ["all"],          55: ["U","L","D"],
-                           56:["U","R"],        57: ["L", "U", "R"], 58: ["L", "U", "R"], 59: ["L", "U", "R"],  60: ["L", "U", "R"],  61: ["L", "U", "R"],  62: ["L", "U", "R"],  63: ["U","L"],
+                           48:["U","R"],        49: ["all"],         50: ["all"],         51: ["all"],          52: ["all"],          53: ["all"],          54: ["all"],          55: ["U","L","D"],
+                           56:["U","R"],        57: ["U", "R"],      58: ["L", "U", "R"], 59: ["L", "U", "R"],  60: ["L", "U", "R"],  61: ["L", "U", "R"],  62: ["L", "U", "R"],  63: ["U","L"],
                         }
     # set "all" to "U", "R", "L", "D"
     for i in range(0, len(possible_actions)):
@@ -360,9 +368,59 @@ def main():
             print("OVERLOAD!!!!!!")
             break
 
-    print("finished! Time to back out the policy.")
-
+    print("1) Finished Value Iteration!")
+    filename = "value_fx.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([V_[0] , V_[1] , V_[2] ,  V_[3] , V_[4] , V_[5] , V_[6] ,  V_[7]])
+        csvwriter.writerow([V_[8] , V_[9] , V_[10],  V_[11], V_[12], V_[13], V_[14],  V_[15]])
+        csvwriter.writerow([V_[16], V_[17], V_[18],  V_[19], V_[20], V_[21], V_[22],  V_[23]])
+        csvwriter.writerow([V_[24], V_[25], V_[26],  V_[27], V_[28], V_[29], V_[30],  V_[31]])
+        csvwriter.writerow([V_[32], V_[33], V_[34],  V_[35], V_[36], V_[37], V_[38],  V_[39]])
+        csvwriter.writerow([V_[40], V_[41], V_[42],  V_[43], V_[44], V_[45], V_[46],  V_[47]])
+        csvwriter.writerow([V_[48], V_[49], V_[50],  V_[51], V_[52], V_[53], V_[54],  V_[55]])
+        csvwriter.writerow([V_[56], V_[57], V_[58],  V_[59], V_[60], V_[61], V_[62],  V_[63]])
+    print("2) Output value function grid to: ", filename)
+    print("")
+    print("Time to back out the policy...")
+    print("")
     # get back the policy:
-    
+    x = compute_state_index(x_init,states)
+    x_goal = compute_state_index(goal, states)
+    x_list = [x]
+    counter = 0
+    while True:
+        current_poss_actions = possible_actions[x]
+        # check through all possible actions of the current state, which action provides the best new state.
+        V_best = -1000
+        x_best = 0
+        for i in range(0, len(current_poss_actions)):
+            poss_state = compute_future_state_index(current_poss_actions[i], x)
+            # don't revisit states in list.
+            if poss_state not in x_list:
+                if V[poss_state] > V_best:
+                    V_best = V[poss_state]
+                    x_best = poss_state
+
+        #update x to be the one with the biggest value.
+        x = x_best
+        x_list.append(x_best)
+
+        #stop when state reached goal.
+        if x == x_goal:
+            print("I reached the goal!")
+            break
+
+        #prevent overflow
+        counter = counter + 1
+        if counter > 100000:
+            break
+
+    #convert state indices to state tuples.
+    x_final = []
+    print("3) Policy is as follows: ")
+    for i in range(0, len(x_list)):
+        x_final.append(states[x_list[i]])
+        print(i + 1, ". ", x_final[i])
 if __name__ == "__main__":
     main()
