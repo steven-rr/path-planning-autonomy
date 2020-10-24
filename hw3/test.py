@@ -25,6 +25,7 @@ def main():
     y = "U"
     if y in x:
         print("this works!", y)
-
+    x = abs(10)
+    print(x,x,x)
 if __name__ == "__main__":
     main()

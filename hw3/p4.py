@@ -14,7 +14,7 @@
 # //|
 # ////////////////////////////////////////////////////////////////////////////
 
-
+from copy import deepcopy
 # -------------------------------------------------------------------------
 #  Class : Probability transition
 #  Description: Holds transition probabilities.
@@ -28,182 +28,200 @@ class probability_transition():
         self.arrow_probability_right = arrow_probability_right
 
     # assume desired_state is some direction.
-    def compute_probability_left_arrow(self, possible_actions, action):
+    def compute_probability_left_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_left[0][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_left[0][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_left[0][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_left[0][3] + result
         elif action == "R":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_left[1][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_left[1][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_left[1][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_left[1][3] + result
         elif action == "L":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_left[2][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_left[2][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_left[2][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_left[2][3] + result
         elif action == "D":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_left[3][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_left[3][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_left[3][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_left[3][3] + result
         return result
 
     # assume desired_state is some direction.
-    def compute_probability_right_arrow(self, possible_actions, action):
+    def compute_probability_right_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_right[0][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_right[0][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_right[0][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_right[0][3] + result
         elif action == "R":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_right[1][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_right[1][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_right[1][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_right[1][3] + result
         elif action == "L":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_right[2][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_right[2][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_right[2][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_right[2][3] + result
         elif action == "D":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_right[3][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_right[3][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_right[3][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_right[3][3] + result
         return result
 
     # assume desired_state is some direction.
-    def compute_probability_down_arrow(self, possible_actions, action):
+    def compute_probability_down_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_down[0][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_down[0][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_down[0][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_down[0][3] + result
         elif action == "R":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_down[1][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_down[1][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_down[1][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_down[1][3] + result
         elif action == "L":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_down[2][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_down[2][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_down[2][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_down[2][3] + result
         elif action == "D":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_down[3][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_down[3][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_down[3][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_down[3][3] + result
         return result
 
     # assume desired_state is some direction.
-    def compute_probability_up_arrow(self, possible_actions, action):
+    def compute_probability_up_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_up[0][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_up[0][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_up[0][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_up[0][3] + result
         elif action == "R":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_up[1][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_up[1][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_up[1][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_up[1][3] + result
         elif action == "L":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_up[2][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_up[2][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_up[2][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_up[2][3] + result
         elif action == "D":
-            if "U" in possible_actions:
+            if future_state_direction == "U":
                 result = self.arrow_probability_up[3][0] + result
-            if "R" in possible_actions:
+            elif future_state_direction == "R":
                 result = self.arrow_probability_up[3][1] + result
-            if "L" in possible_actions:
+            elif future_state_direction == "L":
                 result = self.arrow_probability_up[3][2] + result
-            if "D" in possible_actions:
+            elif future_state_direction == "D":
                 result = self.arrow_probability_up[3][3] + result
+
         return result
     # compute probability of desired state based on current state and current action.
-    def compute_probability(self, possible_actions, current_state, action):
+    def compute_probability(self, future_state_direction, current_state, action):
 
         direction = self.arrow_map[(current_state[0], current_state[1])]
+        probability_return = 0
         if direction == "U":
-            probability_return = self.compute_probability_uparrow(possible_actions, action)
+            probability_return = self.compute_probability_up_arrow(future_state_direction, action)
         elif direction == "D":
-            probability_return = self.compute_probability_down_arrow(possible_actions, action)
+            probability_return = self.compute_probability_down_arrow(future_state_direction, action)
         elif direction == "L":
-            probability_return = self.compute_probability_left_arrow(possible_actions, action)
+            probability_return = self.compute_probability_left_arrow(future_state_direction, action)
         elif direction == "R":
-            probability_return = self.compute_probability_right_arrow(possible_actions, action)
+            probability_return = self.compute_probability_right_arrow(future_state_direction, action)
         return probability_return
 
+# -------------------------------------------------------------------------
+#  Class : Reward
+#  Description: Given future state direction, and index, it returns future index.
+# ------------------------------------------------------------------------
+def compute_future_state_index(future_state,i):
+    idx_out = 0
+    if future_state == "U":
+        idx_out = i - 8
+    elif future_state == "R":
+        idx_out = i + 1
+    elif future_state == "L":
+        idx_out = i - 1
+    elif future_state == "D":
+        idx_out = i + 8
+
+    return idx_out
 # -------------------------------------------------------------------------
 #  Class : Reward
 #  Description: Holds functions for computing reward based on states and
@@ -238,8 +256,8 @@ class reward():
 # ------------------------------------------------------------------------
 def main():
     x_init = [7,1]
-    goal= [2,8]
-    O = [[1,1],[1,6],[3,4],[4,4],[4,5],[4,8],[5,2],[6,2],[6,6],[7,6]]
+    goal= (2,8)
+    O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
     R = reward(O, goal)
     # states
@@ -285,10 +303,9 @@ def main():
     # Assuming actions: {U, R, L, D}
     # Assuming probability also: {U, R, L, D}
     arrow_probability_up    = [[0.75, 0.1, 0.1, 0.05], [0.2, 0.6, 0.05, 0.15],[0.2, 0.05, 0.6,0.15],[0.05,0.2,0.2,0.55]]
-    arrow_probability_down  = [[0.05, 0.1, 0.1, 0.75], [0.15, 0.05, 0.6, 0.2],[0.15, 0.6, 0.05,0.2],[0.55,0.2,0.2,0.05]]
-    arrow_probability_left  = [[0.1, 0.05, 0.75, 0.1], [0.2, 0.6, 0.05, 0.15],[0.2, 0.05, 0.6,0.15],[0.05,0.2,0.2,0.55]]
-    arrow_probability_right = [[0.75, 0.1, 0.1, 0.05], [0.2, 0.6, 0.05, 0.15],[0.2, 0.05, 0.6,0.15],[0.05,0.2,0.2,0.55]]
-
+    arrow_probability_down  = [[0.55, 0.2, 0.2, 0.05], [0.15, 0.6, 0.05, 0.2],[0.15, 0.05, 0.6,0.2],[0.05,0.1,0.1,0.75]]
+    arrow_probability_left  = [[0.6, 0.15, 0.2, 0.05], [0.2, 0.55, 0.05, 0.2],[0.1, 0.05, 0.75,0.1],[0.05,0.15,0.2,0.6]]
+    arrow_probability_right = [[0.6, 0.2, 0.15, 0.05], [0.1, 0.75, 0.05, 0.1],[0.2, 0.05, 0.55,0.2],[0.05,0.2,0.15,0.6]]
     # instantiate mdp probabilities.
     mdp_probability = probability_transition(arrow_map,arrow_probability_up, arrow_probability_down, arrow_probability_left, arrow_probability_right)
 
@@ -301,23 +318,50 @@ def main():
 
     # Value Iteration:
     counter = 0
+    epsilon = 0.2
+    delta = 10
     while True:
+        V = deepcopy(V_)
+        delta = 0
         # for each state s in S do
         for i in range(0, len(states)):
             # Compute max utility for the current state, search over all possible actions
-            current_poss_actions = possible_actions[states[i]]
-            max_util = 0
+            current_poss_actions = possible_actions[i]
+            util = 0
+            max_util = -1000
+            # Given state, loop over possible actions
             for j in range(0, len(current_poss_actions)):
-                util = V[states[i]] * mdp_probability.compute_probability(current_poss_actions, states[i],current_poss_actions[i])
+
+                # Given the state, and the action, loop through all possible future states.
+                for k in range(0 , len(current_poss_actions)):
+                    future_state_direction = current_poss_actions[k]
+                    future_state_index = compute_future_state_index(future_state_direction, i)
+                    util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i],current_poss_actions[j]) + util
+
+                # if this current action gives higher utility than the max, then update max utility.
                 if util > max_util:
                     max_util = util
+                util = 0
 
             # update V'. Reward plus max utility.
-            V_[i] = reward.compute_reward(states[i]) + gam*max_util
+            V_[i] = R.compute_reward(states[i]) + gam*max_util
 
+            # check for delta update.
+            if abs(V_[i] - V[i]) > delta:
+                delta = abs(V_[i] - V[i])
+
+        # once delta is small enough, we can exit.
+        if delta < (epsilon * (1 - gam) * (1 / gam)):
+            break
         # prevent from breaking.
         counter = counter + 1
-        if counter > 90000:
+        if counter > 100000:
+            print("OVERLOAD!!!!!!")
             break
+
+    print("finished! Time to back out the policy.")
+
+    # get back the policy:
+    
 if __name__ == "__main__":
     main()
