@@ -25,17 +25,18 @@ class testing:
     def execute_function(self):
         print("it worked! ", self.state)
 
-def test_fx(x_in):
-    x_in.execute_function()
+def test_fx(value):
+    value.execute_function()
 
 def main():
-
+    V = {}
     x = testing()
     x.set_state(9001)
-    X = [1, 2, 3, 4, 5]
-    npx = np.array(X)
-    print(npx)
+    test_fx(x)
 
+    V[0] = 1
+    V[2] = 3
+    print(V)
 
 
 
