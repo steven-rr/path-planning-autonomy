@@ -16,7 +16,7 @@
 # //|
 # //|
 # ////////////////////////////////////////////////////////////////////////////
-
+from copy import deepcopy
 
 # -------------------------------------------------------------------------
 #  Function: move_right
@@ -24,7 +24,7 @@
 #               moving empty space to the right
 # -------------------------------------------------------------------------
 def move_right(list_in, idx_in):
-    list_result = list_in[:]
+    list_result = deepcopy(list_in)
     list_result[idx_in] = list_in[idx_in + 1]
     list_result[idx_in + 1] = 0
     return list_result
@@ -35,7 +35,7 @@ def move_right(list_in, idx_in):
 #               moving empty space to the left
 # -------------------------------------------------------------------------
 def move_left(list_in ,idx_in):
-    list_result = list_in[:]
+    list_result = deepcopy(list_in)
     list_result[idx_in] = list_in[idx_in - 1]
     list_result[idx_in - 1] = 0
     return list_result
@@ -46,7 +46,7 @@ def move_left(list_in ,idx_in):
 #               moving empty space downward
 # -------------------------------------------------------------------------
 def move_down(list_in, idx_in):
-    list_result = list_in[:]
+    list_result = deepcopy(list_in)
     list_result[idx_in] = list_in[idx_in + 3]
     list_result[idx_in + 3] = 0
     return list_result
@@ -57,7 +57,7 @@ def move_down(list_in, idx_in):
 #               moving empty space upward
 # -------------------------------------------------------------------------
 def move_up(list_in, idx_in):
-    list_result = list_in[:]
+    list_result = deepcopy(list_in)
     list_result[idx_in] = list_in[idx_in - 3]
     list_result[idx_in - 3] = 0
     return list_result
@@ -68,10 +68,10 @@ def move_up(list_in, idx_in):
 # -------------------------------------------------------------------------
 def move(list_in):
     index = list_in.index(0)
-    list1 = list_in[:]
-    list2 = list_in[:]
-    list3 = list_in[:]
-    list4 = list_in[:]
+    list1 = deepcopy(list_in)
+    list2 = deepcopy(list_in)
+    list3 = deepcopy(list_in)
+    list4 = deepcopy(list_in)
     list_result = []
     if index == 0:
         list1 = move_right(list_in,index)
@@ -139,7 +139,7 @@ def heuristic1(list_in, list_goal):
 
 
 # -------------------------------------------------------------------------
-#  Function: move_right
+#  Function: generate_coords
 #  Description: Given an index based on 1D list, outputs 2D coordinates
 #               Based on the following scheme:
 #
@@ -275,7 +275,7 @@ def main():
                 if child in expanded:
                     children.remove(child)
             for child in children:
-                new_path = best_path[:]
+                new_path = deepcopy(best_path)
                 new_path.insert(0,child)
                 new_cost = best_cost + 1 + heuristic_cost[child]
                 Q.append([new_path, new_cost])
@@ -293,7 +293,7 @@ def main():
         print(graph_nodes[best_path_result[0][i]])
 
     print("best path cost is: ", best_path_result[1])
-    print("nodes expanded: ", len(graph_nodes))
+    print("nodes created: ", len(graph_nodes))
 
 
 if __name__ == "__main__":

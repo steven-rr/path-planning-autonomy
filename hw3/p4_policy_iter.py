@@ -211,14 +211,27 @@ class probability_transition():
 
 # -------------------------------------------------------------------------
 #  Class : compute_policy_evaluation
-#  Description: Given future state direction, and index, it returns future index.
+#  Description: V(s) = R(s) + gam* summation over s' of P*V(s')
+#               V(s) - gam * summation over s' of P*V(s') = R(s)
 # ------------------------------------------------------------------------
-def compute_policy_evaluation(pi, U, states,possible_actions):
+def compute_policy_evaluation(pi, U, gam, reward_list, states,possible_future_states):
     # for each state calculate a value iteration.
-
+    x = []
+    # sets reward coefficients for each state - R(s)
+    reward_array = np.array(reward_list)
     for i in range(0 , len(states)):
-        current_poss_actions = possible_actions[i]
-    
+        # initialize equation for row:
+        linear_eqn_i = [0]*len(states)
+        # set current state coefficients - V(s)
+        linear_eqn_i[i] = 1
+        # set future state coefficients - V(s')
+        current_poss_future_states = possible_future_states[i]
+        for j in range(0, len(current_poss_future_states)):
+            future_state = current_poss_future_states[j]
+            future_state_idx = compute_future_state_index(future_state, i )
+            future_state_probability = 0
+        # add linear equation row to list of rows.
+        x.append(linear_eqn_i)
 
 
     return 0
