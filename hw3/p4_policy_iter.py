@@ -219,6 +219,7 @@ def compute_policy_evaluation(pi, U, gam, mdp_probability, R, states,possible_fu
     x = []
     # sets reward coefficients for each state - R(s)
     reward_list = []
+
     # initialize return dictionary, V
     V = {}
     for i in range(0 , len(states)):
@@ -374,9 +375,9 @@ def main():
     right_edge = [7, 15, 23, 31, 39, 47, 55, 63]
     for i in range(0, len(states)):
         if i in right_edge:
-            pi[i] = i - 1
+            pi[i] = "L"
         else:
-            pi[i] = i + 1
+            pi[i] = "R"
 
     # Begin Algorithm:
     while True:
@@ -399,7 +400,7 @@ def main():
                 policy_util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i], pi[i])
 
             max_util = -1000
-            best_future_state_idx = 0
+            best_future_action = 0
             # Given state, loop over possible actions
             for j in range(0, len(current_poss_actions)):
 
@@ -412,12 +413,12 @@ def main():
                 # if this current action gives higher utility than the max, then update max utility.
                 if util > max_util:
                     max_util = util
-                    best_future_state_idx = compute_future_state_index(current_poss_actions[j], i )
+                    best_future_action = current_poss_actions[j]
                 util = 0
 
             # if best action provided a better policy, update our policy to match the best one.
             if max_util > policy_util:
-                pi[i] = best_future_state_idx
+                pi[i] = best_future_action
                 unchanged = False
 
         # once delta is small enough, we can exit.
