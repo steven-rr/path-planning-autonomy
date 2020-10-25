@@ -207,6 +207,11 @@ class probability_transition():
             probability_return = self.compute_probability_left_arrow(future_state_direction, action)
         elif direction == "R":
             probability_return = self.compute_probability_right_arrow(future_state_direction, action)
+        elif direction == "0":
+            if action == future_state_direction:
+                probability_return = 1.0
+            else:
+                probability_return = 0.0
         return probability_return
 
 # -------------------------------------------------------------------------
@@ -410,7 +415,7 @@ def main():
             for k in range(0,len(current_poss_actions)):
                 future_state_direction = current_poss_actions[k]
                 future_state_index = compute_future_state_index(future_state_direction, i)
-                policy_util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i], pi[i])
+                policy_util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i], pi[i]) + policy_util
 
             max_util = -1000
             best_future_action = 0
@@ -457,5 +462,7 @@ def main():
         csvwriter.writerow([V[48], V[49], V[50],  V[51], V[52], V[53], V[54],  V[55]])
         csvwriter.writerow([V[56], V[57], V[58],  V[59], V[60], V[61], V[62],  V[63]])
     print("Finished. Printed to: ", filename)
+    print("")
+
 if __name__ == "__main__":
     main()
