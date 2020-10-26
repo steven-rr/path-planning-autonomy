@@ -654,6 +654,15 @@ def compute_policy_list(pi, x_init, goal, legal_actions, states):
 #               Assume that the probability distribution is = [U, R, L, D]
 # ------------------------------------------------------------------------
 def coin_toss(probability_distribution):
+    """
+    random.random() generates a number between 0 and 1 uniformly.
+    Each action has an associated probability and they all probabilities up to one,
+    therefore I create intervals, where the interval sizes are based on the
+    probabilities. The more likely a probability, the bigger the interval.
+    Then, I simply use random.random(), if the random number falls in the interval,
+    then that respective action is the one the simulated robot will take based on the
+    probability distribution.
+    """
     num1 = probability_distribution[0]
     num2 = num1 + probability_distribution[1]
     num3 = num2 + probability_distribution[2]
@@ -720,16 +729,19 @@ def run_simulation(simulation_run_number, mdp_probability, x_init, goal, action_
 #               gam    = Discount factor
 #               U      = Utility
 #               R      = reward.
+#
+#               NOTE FOR REWARDS: you can uncomment different
+#                                 rewards for different cases.
 # ------------------------------------------------------------------------
 def main():
     x_init = (8,1)
     goal= (2,8)
-    case_a_tuple = (4,3)
-    case_b_tuple = (1,5)
-    case_c_tuple = (2,5)
     O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
     R = reward(O, goal)
+    case_a_tuple = (4,3)
+    case_b_tuple = (1,5)
+    case_c_tuple = (2,5)
     # R = reward_case_a(O, goal, case_a_tuple)
     # R = reward_case_b(O, goal, case_b_tuple)
     # R = reward_case_c(O, goal, case_c_tuple)
