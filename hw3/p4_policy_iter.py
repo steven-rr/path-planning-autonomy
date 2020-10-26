@@ -508,7 +508,10 @@ def main():
     for i in range(0, len(x_list)):
         x_final.append(states[x_list[i]])
         print(i + 1, ". ", x_final[i])
-
     print("Reached goal in: ", len(x_list), "steps by using Policy Iteration.")
+
+
+
+
 if __name__ == "__main__":
     main()

@@ -15,6 +15,7 @@
 # ////////////////////////////////////////////////////////////////////////////
 
 import numpy as np
+import random
 class testing:
     def __init__(self):
         self.state = 1000
@@ -28,15 +29,19 @@ class testing:
 def test_fx(value):
     value.execute_function()
 
-def main():
-    V = {}
-    x = testing()
-    x.set_state(9001)
-    test_fx(x)
+def coin_toss(p):
+    bool = False
+    if random.random() <= p:
+        bool = True
+    return bool
 
-    V[0] = 1
-    V[2] = 3
-    print(V)
+def main():
+    heads = 0
+    for i in range(0, 100000):
+        if coin_toss(0.5):
+            heads += 1
+    print(heads)
+
 
 
 

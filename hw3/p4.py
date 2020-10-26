@@ -16,6 +16,7 @@
 
 from copy import deepcopy
 import csv
+import random
 # -------------------------------------------------------------------------
 #  Class : Probability transition
 #  Description: Holds transition probabilities.
@@ -212,6 +213,57 @@ class probability_transition():
                 probability_return = 0
         return probability_return
 
+    def compute_probability_distribution(self, desired_action, current_state):
+        direction = self.arrow_map[(current_state[0], current_state[1])]
+        probability_distribution_return = []
+
+        if direction == "U":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_up[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_up[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_up[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_up[3]
+        elif direction == "R":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_right[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_right[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_right[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_right[3]
+        elif direction == "L":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_left[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_left[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_left[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_left[3]
+        elif direction == "D":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_down[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_down[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_down[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_down[3]
+        elif direction == "0":
+            if desired_action == "U":
+                probability_distribution_return = [1.0, 0.0, 0.0, 0.0]
+            elif desired_action == "R":
+                probability_distribution_return = [0.0, 1.0, 0.0, 0.0]
+            elif desired_action == "L":
+                probability_distribution_return = [0.0, 0.0, 1.0, 0.0]
+            elif desired_action == "D":
+                probability_distribution_return = [0.0, 0.0, 0.0, 1.0]
+
+        return probability_distribution_return
 # -------------------------------------------------------------------------
 #  Class : compute_init_index
 #  Description: Given future state direction, and index, it returns future index.
@@ -220,7 +272,7 @@ def compute_state_index(x_state_tuple, states):
     x_init_idx = list(states.keys())[list(states.values()).index(x_state_tuple)]
     return x_init_idx
 # -------------------------------------------------------------------------
-#  Class : Reward
+#  Class : compute_future_state_index
 #  Description: Given future state direction, and index, it returns future index.
 # ------------------------------------------------------------------------
 def compute_future_state_index(future_state,i):
@@ -235,6 +287,16 @@ def compute_future_state_index(future_state,i):
         idx_out = i + 8
 
     return idx_out
+# -------------------------------------------------------------------------
+#  Class : compute_future_state
+#  Description: Given action, state tuple, and state dict, returns future state tuple
+# ------------------------------------------------------------------------
+def compute_future_state(action, state_tuple, states):
+    state_idx = compute_state_index(state_tuple, states)
+    future_state_idx = compute_future_state_index(action, state_idx)
+    future_state = states[future_state_idx]
+    return future_state
+
 
 def print_value_iter_result(V_):
     print("1) Finished Value Iteration! Printing Value Fx..")
@@ -253,6 +315,35 @@ def print_value_iter_result(V_):
     print("")
     print("Time to back out the policy...")
     print("")
+
+# -------------------------------------------------------------------------
+#  Class : coin_toss
+#  Description: Given a probability distribution, returns the actual action to occur.
+#               Assume that the probability distribution is = [U, R, L, D]
+# ------------------------------------------------------------------------
+def coin_toss(probability_distribution):
+    num1 = probability_distribution[0]
+    num2 = num1 + probability_distribution[1]
+    num3 = num2 + probability_distribution[2]
+    num4 = num3 + probability_distribution[3]
+    random_number = random.random()
+    final_action = 0
+    # check where the random number lands, and perform the final action accordingly.
+    if random_number < num1:
+        final_action = "U"
+    elif num1 < random_number < num2:
+        final_action = "R"
+    elif num2 < random_number < num3:
+        final_action = "L"
+    elif num3 < random_number < num4:
+        final_action = "D"
+
+    return final_action
+
+def print_simulation_result(succesful_attempts, simulation_run_number):
+    print("3) Simulating ", simulation_run_number, " attempts...")
+    print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
+
 # -------------------------------------------------------------------------
 #  Class : Reward
 #  Description: Holds functions for computing reward based on states and
@@ -416,21 +507,26 @@ def main():
     x = compute_state_index(x_init,states)
     x_goal = compute_state_index(goal, states)
     x_list = [x]
+    action_best = 0
+    action_best_list = []
     counter = 0
     while True:
         current_poss_actions = legal_actions[x]
         # check through all possible actions of the current state, go to action which provides the highest value.
         V_best = -1000
         x_best = 0
+        action_best = 0
         for i in range(0, len(current_poss_actions)):
             poss_state = compute_future_state_index(current_poss_actions[i], x)
             if V[poss_state] > V_best:
                 V_best = V[poss_state]
                 x_best = poss_state
+                action_best = current_poss_actions[i]
 
         #update x to be the one with the biggest Value.
         x = x_best
         x_list.append(x_best)
+        action_best_list.append(action_best)
 
         #stop when state reached goal.
         if x == x_goal:
@@ -454,7 +550,36 @@ def main():
     #####################################################
     ####   Result testing:
     #####################################################
-    
+    # initialize x and reward.
+    simulation_run_number = 10000
+    x_list = [[] for x in range(0, simulation_run_number)]
+    simulated_reward_list = []
+
+    succesful_attempts = 0
+    # loop over simulation runs.
+    for i in range(0, simulation_run_number):
+
+        # reinitialize
+        x = x_init
+        simulated_reward = 0
+
+        # attempt the policy. loop over actions within policy.
+        for j in range(0, len(action_best_list)):
+            desired_action = action_best_list[j]
+            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
+            final_action = coin_toss(probability_distribution)
+            if final_action in legal_actions[compute_state_index(x, states)]:
+                x = compute_future_state(final_action, x, states)
+                x_list[i].append(x)
+            simulated_reward = R.compute_reward(x) + simulated_reward
+
+        simulated_reward_list.append(simulated_reward)
+        # count number of succesful attempts
+        if x == goal:
+            succesful_attempts = succesful_attempts + 1
+
+    # print results to console.
+    print_simulation_result(succesful_attempts,simulation_run_number)
 
 if __name__ == "__main__":
     main()
