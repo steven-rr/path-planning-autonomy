@@ -274,7 +274,7 @@ class probability_transition():
 
 # -------------------------------------------------------------------------
 #  Function : compute_state_index
-#  Description: Given future state direction, and index, it returns future index.
+#  Description: Given a state tuple, and a state dictionary, return the state index.
 # ------------------------------------------------------------------------
 def compute_state_index(x_state_tuple, states):
     x_init_idx = list(states.keys())[list(states.values()).index(x_state_tuple)]
@@ -282,7 +282,8 @@ def compute_state_index(x_state_tuple, states):
 
 # -------------------------------------------------------------------------
 #  Function : compute_future_state_index
-#  Description: Given future state direction, and index, it returns future index.
+#  Description: Given an action and a state index, return the future index
+#               after taking the action in a certain direction.
 # ------------------------------------------------------------------------
 def compute_future_state_index(future_state,i):
     idx_out = 0
@@ -295,6 +296,7 @@ def compute_future_state_index(future_state,i):
     elif future_state == "D":
         idx_out = i + 8
     return idx_out
+
 # -------------------------------------------------------------------------
 #  Function : compute_future_state
 #  Description: Given action, state tuple, and state dict, returns future state tuple
@@ -304,28 +306,6 @@ def compute_future_state(action, state_tuple, states):
     future_state_idx = compute_future_state_index(action, state_idx)
     future_state = states[future_state_idx]
     return future_state
-
-# -------------------------------------------------------------------------
-#  Function : print_value_iter_result
-#  Description: Given action, state tuple, and state dict, returns future state tuple
-# ------------------------------------------------------------------------
-def print_value_iter_result(V_):
-    print("1) Finished Value Iteration! Printing Value Fx..")
-    filename = "value_fx_value_iter.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow([V_[0] , V_[1] , V_[2] ,  V_[3] , V_[4] , V_[5] , V_[6] ,  V_[7]])
-        csvwriter.writerow([V_[8] , V_[9] , V_[10],  V_[11], V_[12], V_[13], V_[14],  V_[15]])
-        csvwriter.writerow([V_[16], V_[17], V_[18],  V_[19], V_[20], V_[21], V_[22],  V_[23]])
-        csvwriter.writerow([V_[24], V_[25], V_[26],  V_[27], V_[28], V_[29], V_[30],  V_[31]])
-        csvwriter.writerow([V_[32], V_[33], V_[34],  V_[35], V_[36], V_[37], V_[38],  V_[39]])
-        csvwriter.writerow([V_[40], V_[41], V_[42],  V_[43], V_[44], V_[45], V_[46],  V_[47]])
-        csvwriter.writerow([V_[48], V_[49], V_[50],  V_[51], V_[52], V_[53], V_[54],  V_[55]])
-        csvwriter.writerow([V_[56], V_[57], V_[58],  V_[59], V_[60], V_[61], V_[62],  V_[63]])
-    print("2) Output value function grid to: ", filename)
-    print("")
-    print("Time to back out the policy...")
-    print("")
 
 # -------------------------------------------------------------------------
 #  Function : coin_toss
@@ -349,6 +329,28 @@ def coin_toss(probability_distribution):
     elif num3 < random_number < num4:
         final_action = "D"
     return final_action
+
+# -------------------------------------------------------------------------
+#  Function : print_value_iter_result
+#  Description: Given action, state tuple, and state dict, returns future state tuple
+# ------------------------------------------------------------------------
+def print_value_iter_result(V_):
+    print("1) Finished Value Iteration! Printing Value Fx..")
+    filename = "value_fx_value_iter.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([V_[0] , V_[1] , V_[2] ,  V_[3] , V_[4] , V_[5] , V_[6] ,  V_[7]])
+        csvwriter.writerow([V_[8] , V_[9] , V_[10],  V_[11], V_[12], V_[13], V_[14],  V_[15]])
+        csvwriter.writerow([V_[16], V_[17], V_[18],  V_[19], V_[20], V_[21], V_[22],  V_[23]])
+        csvwriter.writerow([V_[24], V_[25], V_[26],  V_[27], V_[28], V_[29], V_[30],  V_[31]])
+        csvwriter.writerow([V_[32], V_[33], V_[34],  V_[35], V_[36], V_[37], V_[38],  V_[39]])
+        csvwriter.writerow([V_[40], V_[41], V_[42],  V_[43], V_[44], V_[45], V_[46],  V_[47]])
+        csvwriter.writerow([V_[48], V_[49], V_[50],  V_[51], V_[52], V_[53], V_[54],  V_[55]])
+        csvwriter.writerow([V_[56], V_[57], V_[58],  V_[59], V_[60], V_[61], V_[62],  V_[63]])
+    print("2) Output value function grid to: ", filename)
+    print("")
+    print("Time to back out the policy...")
+    print("")
 
 # -------------------------------------------------------------------------
 #  Function : print_policy_result
