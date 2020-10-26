@@ -340,10 +340,14 @@ def coin_toss(probability_distribution):
 
     return final_action
 
-def print_simulation_result(succesful_attempts, simulation_run_number):
+def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
     print("3) Simulating ", simulation_run_number, " attempts...")
     print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
-
+    reward_accumulator = 0
+    for i in range(0, len(simulated_reward_list)):
+        reward_accumulator = simulated_reward_list[i] + reward_accumulator
+    reward_average = reward_accumulator / len(simulated_reward_list)
+    print(reward_average, "is the reward average. ")
 # -------------------------------------------------------------------------
 #  Class : Reward
 #  Description: Holds functions for computing reward based on states and
@@ -579,7 +583,7 @@ def main():
             succesful_attempts = succesful_attempts + 1
 
     # print results to console.
-    print_simulation_result(succesful_attempts,simulation_run_number)
+    print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list)
 
 if __name__ == "__main__":
     main()
