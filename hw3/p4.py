@@ -467,8 +467,147 @@ class reward_case_c():
         else:
             reward_out = -1
         return reward_out
+
 # -------------------------------------------------------------------------
-#  Class : main
+#  Function : value_iteration
+#  Description: Does Value iteration, returns a utility function.
+# ------------------------------------------------------------------------
+def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, legal_actions, states):
+
+    counter = 0
+    delta = 10
+    while True:
+        V = deepcopy(V_)
+        delta = 0
+        # for each state s in S do
+        for i in range(0, len(states)):
+            # Compute max utility for the current state, search over all possible actions
+            current_poss_actions = possible_actions[i]
+            util = 0
+            max_util = -1000
+            # Given state, loop over possible actions
+            for j in range(0, len(current_poss_actions)):
+
+                # Given the state, and the action, loop through all possible future states.
+                for k in range(0, len(current_poss_actions)):
+                    future_state_direction = current_poss_actions[k]
+                    future_state_index = compute_future_state_index(future_state_direction, i)
+                    if future_state_direction not in legal_actions[i]:
+                        future_state_index = i
+                    util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction,
+                                                                                       states[i],
+                                                                                       current_poss_actions[j]) + util
+
+                # if this current action gives higher utility than the max, then update max utility.
+                if util > max_util:
+                    max_util = util
+                util = 0
+
+            # update V'. Reward plus max utility.
+            V_[i] = R.compute_reward(states[i]) + gam * max_util
+
+            # check for delta update.
+            if abs(V_[i] - V[i]) > delta:
+                delta = abs(V_[i] - V[i])
+
+        # once delta is small enough, we can exit.
+        if delta < (epsilon * (1 - gam) * (1 / gam)):
+            break
+        # prevent from breaking.
+        counter = counter + 1
+        if counter > 100000:
+            print("OVERLOAD!!!!!!")
+            break
+    return V
+
+# -------------------------------------------------------------------------
+#  Function : compute_optimal_policy
+#  Description: Backs out optimal policy, returns the optimal policy "action_best_list",
+#               and the intended state sequence "x_list".
+# ------------------------------------------------------------------------
+def compute_optimal_policy(x_init, goal, legal_actions,V, states):
+    # Compute Policy based on optimal Value function V*
+    x = compute_state_index(x_init,states)
+    x_goal = compute_state_index(goal, states)
+    x_list = [x]
+    action_best = 0
+    action_best_list = []
+    optimal_policy_results = []
+    counter = 0
+    while True:
+        current_poss_actions = legal_actions[x]
+        # check through all possible actions of the current state, go to action which provides the highest value.
+        V_best = -1000
+        x_best = 0
+        action_best = 0
+        for i in range(0, len(current_poss_actions)):
+            poss_state = compute_future_state_index(current_poss_actions[i], x)
+            if V[poss_state] > V_best:
+                V_best = V[poss_state]
+                x_best = poss_state
+                action_best = current_poss_actions[i]
+
+        # stop if i arrived at a local maximum for Value function:
+        if V[x] > V_best:
+            if x == x_goal:
+                print("Policy is derived! From the start position, I can reach the goal!")
+            else:
+                print("Policy is derived! From the start position, I can reach a local minimum!")
+            break
+        #update x to be the one with the biggest Value.
+        x = x_best
+        x_list.append(x_best)
+        action_best_list.append(action_best)
+
+
+        #prevent overflow
+        counter = counter + 1
+        if counter > 100000:
+            print("OVERFLOW!!!!!!!!")
+            break
+    optimal_policy_results.append(x_list)
+    optimal_policy_results.append(action_best_list)
+    return optimal_policy_results
+
+# -------------------------------------------------------------------------
+#  Function : run_simulation
+#  Description: Given an optimal policy, probability state transition, and how many
+#               simulations to run, it computes how many times robot can go from x_init
+#               to x_goal. Returns number of succesful attempts, and the reward list.
+# ------------------------------------------------------------------------
+def run_simulation(simulation_run_number, action_best_list, mdp_probability, legal_actions, x_init, goal, states, R):
+
+    x_list = [[] for x in range(0, simulation_run_number)]
+    simulated_reward_list = []
+    succesful_attempts = 0
+    simulation_results = []
+    # loop over simulation runs.
+    for i in range(0, simulation_run_number):
+
+        # reinitialize
+        x = x_init
+        simulated_reward = 0
+
+        # attempt the policy. loop over actions within policy.
+        for j in range(0, len(action_best_list)):
+            desired_action = action_best_list[j]
+            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
+            final_action = coin_toss(probability_distribution)
+            if final_action in legal_actions[compute_state_index(x, states)]:
+                x = compute_future_state(final_action, x, states)
+                x_list[i].append(x)
+            simulated_reward = R.compute_reward(x) + simulated_reward
+
+        simulated_reward_list.append(simulated_reward)
+        # count number of succesful attempts
+        if x == goal:
+            succesful_attempts = succesful_attempts + 1
+
+    simulation_results.append(simulated_reward_list)
+    simulation_results.append(succesful_attempts)
+    return simulation_results
+# -------------------------------------------------------------------------
+#  Function : main
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 #
@@ -566,129 +705,25 @@ def main():
         V[i] = 0
         V_[i] = 0
 
-    # Value Iteration:
-    counter = 0
+    # Perform Value Iteration, return utility function:
     epsilon = 0.2
-    delta = 10
-    while True:
-        V = deepcopy(V_)
-        delta = 0
-        # for each state s in S do
-        for i in range(0, len(states)):
-            # Compute max utility for the current state, search over all possible actions
-            current_poss_actions = possible_actions[i]
-            util = 0
-            max_util = -1000
-            # Given state, loop over possible actions
-            for j in range(0, len(current_poss_actions)):
-
-                # Given the state, and the action, loop through all possible future states.
-                for k in range(0 , len(current_poss_actions)):
-                    future_state_direction = current_poss_actions[k]
-                    future_state_index = compute_future_state_index(future_state_direction, i)
-                    if future_state_direction not in legal_actions[i]:
-                        future_state_index = i
-                    util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i],current_poss_actions[j]) + util
-
-                # if this current action gives higher utility than the max, then update max utility.
-                if util > max_util:
-                    max_util = util
-                util = 0
-
-            # update V'. Reward plus max utility.
-            V_[i] = R.compute_reward(states[i]) + gam*max_util
-
-            # check for delta update.
-            if abs(V_[i] - V[i]) > delta:
-                delta = abs(V_[i] - V[i])
-
-        # once delta is small enough, we can exit.
-        if delta < (epsilon * (1 - gam) * (1 / gam)):
-            break
-        # prevent from breaking.
-        counter = counter + 1
-        if counter > 100000:
-            print("OVERLOAD!!!!!!")
-            break
+    V = value_iteration(mdp_probability,gam, epsilon, R, V_, V, possible_actions, legal_actions, states)
 
     #print result of value iteration to csv file.
     print_value_iter_result(V_)
 
-    # Compute Policy based on optimal Value function V*
-    x = compute_state_index(x_init,states)
-    x_goal = compute_state_index(goal, states)
-    x_list = [x]
-    action_best = 0
-    action_best_list = []
-    counter = 0
-    while True:
-        current_poss_actions = legal_actions[x]
-        # check through all possible actions of the current state, go to action which provides the highest value.
-        V_best = -1000
-        x_best = 0
-        action_best = 0
-        for i in range(0, len(current_poss_actions)):
-            poss_state = compute_future_state_index(current_poss_actions[i], x)
-            if V[poss_state] > V_best:
-                V_best = V[poss_state]
-                x_best = poss_state
-                action_best = current_poss_actions[i]
-
-        # stop if i arrived at a local maximum for Value function:
-        if V[x] > V_best:
-            if x == x_goal:
-                print("Policy is derived! From the start position, I can reach the goal!")
-            else:
-                print("Policy is derived! From the start position, I can reach a local minimum!")
-            break
-        #update x to be the one with the biggest Value.
-        x = x_best
-        x_list.append(x_best)
-        action_best_list.append(action_best)
+    # Back out optimal policy from V*, return optimal action and optimal state sequence based on initial state..
+    [x_list, action_best_list] = compute_optimal_policy(x_init,goal,legal_actions,V, states)
 
 
-        #prevent overflow
-        counter = counter + 1
-        if counter > 100000:
-            print("OVERFLOW!!!!!!!!")
-            break
-
-    #convert state indices to state tuples.
-    x_final = []
+    # print policy result:
     print_policy_result(x_list, states, action_best_list)
 
-    #####################################################
-    ####   Result testing:
-    #####################################################
-    # initialize x and reward.
+    # Run simulation with policy result. Initialize how many runs you want to do:
     simulation_run_number = 100000
-    x_list = [[] for x in range(0, simulation_run_number)]
-    simulated_reward_list = []
+    [simulated_reward_list, succesful_attempts] = run_simulation(simulation_run_number, action_best_list, mdp_probability, legal_actions, x_init, goal, states, R)
 
-    succesful_attempts = 0
-    # loop over simulation runs.
-    for i in range(0, simulation_run_number):
-
-        # reinitialize
-        x = x_init
-        simulated_reward = 0
-
-        # attempt the policy. loop over actions within policy.
-        for j in range(0, len(action_best_list)):
-            desired_action = action_best_list[j]
-            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
-            final_action = coin_toss(probability_distribution)
-            if final_action in legal_actions[compute_state_index(x, states)]:
-                x = compute_future_state(final_action, x, states)
-                x_list[i].append(x)
-            simulated_reward = R.compute_reward(x) + simulated_reward
-
-        simulated_reward_list.append(simulated_reward)
-        # count number of succesful attempts
-        if x == goal:
-            succesful_attempts = succesful_attempts + 1
-
-    # print results to console.
+    # print simulation results to console.
     print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list)
 
 if __name__ == "__main__":
