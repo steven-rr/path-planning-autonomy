@@ -24,7 +24,7 @@ import random
 # ------------------------------------------------------------------------
 class probability_transition():
     """
-    The class is used to compute probability of going to state s' given state s,
+    The class is used to compute probability of going to state s', given state s,
     and action a. compute_probability() is the main class function that does this.
     This function will call one of the 4 helper functions , depending on the arrow.
     Additionally, a probability distribution class function is also implemented,
