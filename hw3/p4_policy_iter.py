@@ -17,6 +17,7 @@
 from copy import deepcopy
 import csv
 import numpy as np
+import random
 
 # -------------------------------------------------------------------------
 #  Class : Probability transition
@@ -214,6 +215,58 @@ class probability_transition():
                 probability_return = 0.0
         return probability_return
 
+    def compute_probability_distribution(self, desired_action, current_state):
+        direction = self.arrow_map[(current_state[0], current_state[1])]
+        probability_distribution_return = []
+
+        if direction == "U":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_up[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_up[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_up[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_up[3]
+        elif direction == "R":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_right[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_right[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_right[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_right[3]
+        elif direction == "L":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_left[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_left[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_left[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_left[3]
+        elif direction == "D":
+            if desired_action == "U":
+                probability_distribution_return = self.arrow_probability_down[0]
+            elif desired_action == "R":
+                probability_distribution_return = self.arrow_probability_down[1]
+            elif desired_action == "L":
+                probability_distribution_return = self.arrow_probability_down[2]
+            elif desired_action == "D":
+                probability_distribution_return = self.arrow_probability_down[3]
+        elif direction == "0":
+            if desired_action == "U":
+                probability_distribution_return = [1.0, 0.0, 0.0, 0.0]
+            elif desired_action == "R":
+                probability_distribution_return = [0.0, 1.0, 0.0, 0.0]
+            elif desired_action == "L":
+                probability_distribution_return = [0.0, 0.0, 1.0, 0.0]
+            elif desired_action == "D":
+                probability_distribution_return = [0.0, 0.0, 0.0, 1.0]
+
+        return probability_distribution_return
+
 # -------------------------------------------------------------------------
 #  Class : compute_policy_evaluation
 #  Description: V(s) = R(s) + gam* summation over s' of P*V(s')
@@ -266,6 +319,30 @@ def compute_policy_evaluation(pi, U, gam, mdp_probability, R, states,possible_fu
 def compute_state_index(x_state_tuple, states):
     x_init_idx = list(states.keys())[list(states.values()).index(x_state_tuple)]
     return x_init_idx
+
+# -------------------------------------------------------------------------
+#  Class : print_simulation_result
+#  Description: Holds functions for computing reward based on states and
+#               obstacles.
+# ------------------------------------------------------------------------
+def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
+    print("3) Simulating ", simulation_run_number, " attempts...")
+    print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
+    reward_accumulator = 0
+    for i in range(0, len(simulated_reward_list)):
+        reward_accumulator = simulated_reward_list[i] + reward_accumulator
+    reward_average = reward_accumulator / len(simulated_reward_list)
+    print(reward_average, "is the reward average. ")
+
+# -------------------------------------------------------------------------
+#  Class : compute_future_state
+#  Description: Given action, state tuple, and state dict, returns future state tuple
+# ------------------------------------------------------------------------
+def compute_future_state(action, state_tuple, states):
+    state_idx = compute_state_index(state_tuple, states)
+    future_state_idx = compute_future_state_index(action, state_idx)
+    future_state = states[future_state_idx]
+    return future_state
 # -------------------------------------------------------------------------
 #  Class : Reward
 #  Description: Given future state direction, and index, it returns future index.
@@ -301,6 +378,84 @@ def print_value_iter_result(V):
     print("Time to back out the policy...")
     print("")
 
+def print_policy_iter_result(pi):
+    print(" Printing Pi Fx..")
+    filename = "policy_fx_policy_iter.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([pi[0] , pi[1] , pi[2] ,  pi[3] , pi[4] , pi[5] , pi[6] ,  pi[7]])
+        csvwriter.writerow([pi[8] , pi[9] , pi[10],  pi[11], pi[12], pi[13], pi[14],  pi[15]])
+        csvwriter.writerow([pi[16], pi[17], pi[18],  pi[19], pi[20], pi[21], pi[22],  pi[23]])
+        csvwriter.writerow([pi[24], pi[25], pi[26],  pi[27], pi[28], pi[29], pi[30],  pi[31]])
+        csvwriter.writerow([pi[32], pi[33], pi[34],  pi[35], pi[36], pi[37], pi[38],  pi[39]])
+        csvwriter.writerow([pi[40], pi[41], pi[42],  pi[43], pi[44], pi[45], pi[46],  pi[47]])
+        csvwriter.writerow([pi[48], pi[49], pi[50],  pi[51], pi[52], pi[53], pi[54],  pi[55]])
+        csvwriter.writerow([pi[56], pi[57], pi[58],  pi[59], pi[60], pi[61], pi[62],  pi[63]])
+    print("2) Output pi function grid to: ", filename)
+    print("")
+
+def print_policy_policy_iter(x_list, states):
+    # Convert state indices to state tuples and print.
+    x_final = []
+    print("2) Policy is as follows: ")
+    for i in range(0, len(x_list)):
+        x_final.append(states[x_list[i]])
+        print(i + 1, ". ", x_final[i])
+    print("Reached goal in: ", len(x_list), "steps by using Policy Iteration.")
+# -------------------------------------------------------------------------
+#  Class : check_policy_final_step
+#  Description: Check for opposite steps. If number of opposite steps is the number of possible action,
+#               you're at the local minimum/goal!
+# ------------------------------------------------------------------------
+def check_policy_final_step(pi, legal_actions, x_index):
+    possible_actions = legal_actions[x_index]
+    possible_state_indices = []
+    counter = 0
+    final_step = False
+    for i in range(0, len(possible_actions)):
+        current_future_state_index = compute_future_state_index(possible_actions[i], x_index)
+        possible_state_indices.append(current_future_state_index)
+
+        if possible_actions[i] == "U":
+            if pi[current_future_state_index] == "D":
+                counter = counter + 1
+        if possible_actions[i] == "R":
+            if pi[current_future_state_index] == "L":
+                counter = counter + 1
+        if possible_actions[i] == "L":
+            if pi[current_future_state_index] == "R":
+                counter = counter + 1
+        if possible_actions[i] == "D":
+            if pi[current_future_state_index] == "U":
+                counter = counter + 1
+
+    if counter == len(possible_actions):
+        final_step = True
+    return final_step
+
+# -------------------------------------------------------------------------
+#  Class : coin_toss
+#  Description: Given a probability distribution, returns the actual action to occur.
+#               Assume that the probability distribution is = [U, R, L, D]
+# ------------------------------------------------------------------------
+def coin_toss(probability_distribution):
+    num1 = probability_distribution[0]
+    num2 = num1 + probability_distribution[1]
+    num3 = num2 + probability_distribution[2]
+    num4 = num3 + probability_distribution[3]
+    random_number = random.random()
+    final_action = 0
+    # check where the random number lands, and perform the final action accordingly.
+    if random_number < num1:
+        final_action = "U"
+    elif num1 < random_number < num2:
+        final_action = "R"
+    elif num2 < random_number < num3:
+        final_action = "L"
+    elif num3 < random_number < num4:
+        final_action = "D"
+
+    return final_action
 
 # -------------------------------------------------------------------------
 #  Class : Reward
@@ -320,7 +475,71 @@ class reward():
         else:
             reward_out = -1
         return reward_out
+# -------------------------------------------------------------------------
+#  Class : Reward
+#  Description: Holds functions for computing reward based on states and
+#               obstacles.
+# ------------------------------------------------------------------------
+class reward_case_a():
+    def __init__(self, obstacles, goal, cell_tuple):
+        self.obstacles = obstacles
+        self.goal = goal
+        self.cell_tuple = cell_tuple
+    def compute_reward(self,current_state):
+        reward_out = 0
+        if current_state == self.goal:
+            reward_out = 0
+        elif current_state in self.obstacles:
+            reward_out = -10
+        elif current_state == self.cell_tuple:
+            reward_out = 0
+        else:
+            reward_out = -1
+        return reward_out
 
+# -------------------------------------------------------------------------
+#  Class : Reward
+#  Description: Holds functions for computing reward based on states and
+#               obstacles.
+# ------------------------------------------------------------------------
+class reward_case_b():
+    def __init__(self, obstacles, goal, cell_tuple):
+        self.obstacles = obstacles
+        self.goal = goal
+        self.cell_tuple = cell_tuple
+    def compute_reward(self,current_state):
+        reward_out = 0
+        if current_state == self.goal:
+            reward_out = 0
+        elif current_state in self.obstacles:
+            reward_out = -10
+        elif current_state == self.cell_tuple:
+            reward_out = 100
+        else:
+            reward_out = -1
+        return reward_out
+
+# -------------------------------------------------------------------------
+#  Class : Reward
+#  Description: Holds functions for computing reward based on states and
+#               obstacles.
+# ------------------------------------------------------------------------
+class reward_case_c():
+    def __init__(self, obstacles, goal, cell_tuple):
+        self.obstacles = obstacles
+        self.goal = goal
+        self.cell_tuple = cell_tuple
+    def compute_reward(self,current_state):
+        reward_out = 0
+        if current_state == self.goal:
+            reward_out = 0
+        elif current_state in self.obstacles:
+            reward_out = -10
+        elif current_state == self.cell_tuple:
+            reward_out = -3
+        else:
+            reward_out = -1
+        return reward_out
 # -------------------------------------------------------------------------
 #  Class : main
 #  Description: Holds functions for computing reward based on states and
@@ -337,9 +556,15 @@ class reward():
 def main():
     x_init = (8,1)
     goal= (2,8)
+    case_a_tuple = (4,3)
+    case_b_tuple = (1,5)
+    case_c_tuple = (2,5)
     O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
     R = reward(O, goal)
+    # R = reward_case_a(O, goal, case_a_tuple)
+    # R = reward_case_b(O, goal, case_b_tuple)
+    # R = reward_case_c(O, goal, case_c_tuple)
     # states
 
     # how can i move , depending on my index.
@@ -482,19 +707,22 @@ def main():
 
     # print Value function to excel file.
     print_value_iter_result(V)
+    print_policy_iter_result(pi)
 
     # Back out policy.
     x = compute_state_index(x_init,states)
     x_goal = compute_state_index(goal, states)
     x_list = [x]
+    action_best_list = []
     counter = 0
     while True:
         optimal_direction = pi[x]
         x = compute_future_state_index(optimal_direction, x)
         x_list.append(x)
+        action_best_list.append(optimal_direction)
 
-        #once you reach goal, finished!
-        if x == x_goal:
+        #once you reach local minimum, finished!
+        if check_policy_final_step(pi, legal_actions, x):
             break
         # prevent overload.
         counter = counter + 1
@@ -503,13 +731,41 @@ def main():
             break
 
     # Convert state indices to state tuples and print.
-    x_final = []
-    print("2) Policy is as follows: ")
-    for i in range(0, len(x_list)):
-        x_final.append(states[x_list[i]])
-        print(i + 1, ". ", x_final[i])
-    print("Reached goal in: ", len(x_list), "steps by using Policy Iteration.")
+    print_policy_policy_iter(x_list, states)
 
+    #####################################################
+    ####   Result testing:
+    #####################################################
+    # initialize x and reward.
+    simulation_run_number = 10000
+    x_list = [[] for x in range(0, simulation_run_number)]
+    simulated_reward_list = []
+
+    succesful_attempts = 0
+    # loop over simulation runs.
+    for i in range(0, simulation_run_number):
+
+        # reinitialize
+        x = x_init
+        simulated_reward = 0
+
+        # attempt the policy. loop over actions within policy.
+        for j in range(0, len(action_best_list)):
+            desired_action = action_best_list[j]
+            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
+            final_action = coin_toss(probability_distribution)
+            if final_action in legal_actions[compute_state_index(x, states)]:
+                x = compute_future_state(final_action, x, states)
+                x_list[i].append(x)
+            simulated_reward = R.compute_reward(x) + simulated_reward
+
+        simulated_reward_list.append(simulated_reward)
+        # count number of succesful attempts
+        if x == goal:
+            succesful_attempts = succesful_attempts + 1
+
+    # print results to console.
+    print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list)
 
 
 
