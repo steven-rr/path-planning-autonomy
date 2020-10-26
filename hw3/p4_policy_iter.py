@@ -3,7 +3,7 @@
 # //|
 # //| Author : Steven Rivadeneira
 # //|
-# //| File Name : p4.py
+# //| File Name : p5.py
 # //|
 # //| Description : Solves MDP using policy iteration
 # //|
@@ -219,7 +219,7 @@ class probability_transition():
 #  Description: V(s) = R(s) + gam* summation over s' of P*V(s')
 #               V(s) - gam * summation over s' of P*V(s') = R(s)
 # ------------------------------------------------------------------------
-def compute_policy_evaluation(pi, U, gam, mdp_probability, R, states,possible_future_states):
+def compute_policy_evaluation(pi, U, gam, mdp_probability, R, states,possible_future_states, legal_future_states):
     # for each state calculate a value iteration.
     x = []
     # sets reward coefficients for each state - R(s)
@@ -240,9 +240,13 @@ def compute_policy_evaluation(pi, U, gam, mdp_probability, R, states,possible_fu
             future_state = current_poss_future_states[j]
             future_state_idx = compute_future_state_index(future_state, i )
             future_state_probability = mdp_probability.compute_probability(future_state,states[i], pi[i])
-            linear_eqn_i[future_state_idx] = -1.0*gam*future_state_probability
+            if future_state not in legal_future_states[i]:
+                future_state_idx = i
+            linear_eqn_i[future_state_idx] = -1.0*gam*future_state_probability + linear_eqn_i[future_state_idx]
         # append future state coefficients - V(s')
         x.append(linear_eqn_i)
+
+
 
 
     # do numpy manipulation of the linear equations, and the rewards.
@@ -278,6 +282,26 @@ def compute_future_state_index(future_state,i):
         idx_out = i + 8
 
     return idx_out
+
+def print_value_iter_result(V):
+    print("1) Finished Policy Iteration! Printing Value Fx.. ")
+    filename = "value_fx_policy_iter.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([V[0] , V[1] , V[2] ,  V[3] , V[4] , V[5] , V[6] ,  V[7]])
+        csvwriter.writerow([V[8] , V[9] , V[10],  V[11], V[12], V[13], V[14],  V[15]])
+        csvwriter.writerow([V[16], V[17], V[18],  V[19], V[20], V[21], V[22],  V[23]])
+        csvwriter.writerow([V[24], V[25], V[26],  V[27], V[28], V[29], V[30],  V[31]])
+        csvwriter.writerow([V[32], V[33], V[34],  V[35], V[36], V[37], V[38],  V[39]])
+        csvwriter.writerow([V[40], V[41], V[42],  V[43], V[44], V[45], V[46],  V[47]])
+        csvwriter.writerow([V[48], V[49], V[50],  V[51], V[52], V[53], V[54],  V[55]])
+        csvwriter.writerow([V[56], V[57], V[58],  V[59], V[60], V[61], V[62],  V[63]])
+    print("2) Output value function grid to: ", filename)
+    print("")
+    print("Time to back out the policy...")
+    print("")
+
+
 # -------------------------------------------------------------------------
 #  Class : Reward
 #  Description: Holds functions for computing reward based on states and
@@ -329,8 +353,8 @@ def main():
                 48: (7, 1), 49: (7, 2), 50: (7, 3), 51: (7, 4), 52: (7, 5), 53: (7, 6), 54: (7, 7), 55: (7, 8),
                 56: (8, 1), 57: (8, 2), 58: (8, 3), 59: (8, 4), 60: (8, 5), 61: (8, 6), 62: (8, 7), 63: (8, 8),
               }
-    # each state has possible actions:
-    possible_actions =  {
+    # each state has legal actions and  possible actions:
+    legal_actions =  {
                             0:["R","D"],         1: ["L", "D", "R"],  2:["L", "D", "R"],   3: ["L", "D", "R"],   4: ["L", "D", "R"],   5: ["L", "D", "R"],   6:["L", "D", "R"],    7:["L","D"],
                             8:["U","R","D"],     9: ["all"],         10:["all"],          11: ["all"],          12: ["all"],          13: ["all"],          14:["all"],           15:["U","L","D"],
                            16:["U","R","D"],    17: ["all"],         18: ["all"],         19: ["all"],          20: ["all"],          21: ["all"],          22: ["all"],          23: ["U","L","D"],
@@ -340,10 +364,26 @@ def main():
                            48:["U","R"],        49: ["all"],         50: ["all"],         51: ["all"],          52: ["all"],          53: ["all"],          54: ["all"],          55: ["U","L","D"],
                            56:["U","R"],        57: ["U", "R"],      58: ["L", "U", "R"], 59: ["L", "U", "R"],  60: ["L", "U", "R"],  61: ["L", "U", "R"],  62: ["L", "U", "R"],  63: ["U","L"],
                         }
+
+    possible_actions =  {
+                            0:["all"],     1: ["all"],          2: ["all"],          3: ["all"],           4: ["all"],           5: ["all"],           6: ["all"],           7: ["all"],
+                            8:["all"],     9: ["all"],         10: ["all"],         11: ["all"],          12: ["all"],          13: ["all"],          14: ["all"],          15: ["all"],
+                           16:["all"],    17: ["all"],         18: ["all"],         19: ["all"],          20: ["all"],          21: ["all"],          22: ["all"],          23: ["all"],
+                           24:["all"],    25: ["all"],         26: ["all"],         27: ["all"],          28: ["all"],          29: ["all"],          30: ["all"],          31: ["all"],
+                           32:["all"],    33: ["all"],         34: ["all"],         35: ["all"],          36: ["all"],          37: ["all"],          38: ["all"],          39: ["all"],
+                           40:["all"],    41: ["all"],         42: ["all"],         43: ["all"],          44: ["all"],          45: ["all"],          46: ["all"],          47: ["all"],
+                           48:["all"],    49: ["all"],         50: ["all"],         51: ["all"],          52: ["all"],          53: ["all"],          54: ["all"],          55: ["all"],
+                           56:["all"],    57: ["all"],         58: ["all"],         59: ["all"],          60: ["all"],          61: ["all"],          62: ["all"],          63: ["all"],
+                        }
+
     # set "all" to "U", "R", "L", "D"
     for i in range(0, len(possible_actions)):
         if possible_actions[i][0] == "all":
             possible_actions[i] = ["U","R","L","D"]
+
+    for i in range(0, len(legal_actions)):
+        if legal_actions[i][0] == "all":
+            legal_actions[i] = ["U", "R", "L", "D"]
 
     # Directions of arrows.
     arrow_map = {(1, 1): "0", (1, 2): "D", (1, 3): "D", (1, 4): "R", (1, 5): "U", (1, 6): "0", (1, 7): "U", (1, 8): "D",
@@ -384,25 +424,12 @@ def main():
         else:
             pi[i] = "R"
 
-    # Begin Algorithm:
+    # Begin Policy Iteration:
     while True:
         unchanged = True
 
         # Policy Evaluation:
-        V = deepcopy(compute_policy_evaluation(pi, V,gam,mdp_probability, R, states,possible_actions ))
-        print("Printing Value fx generated by policy eval.. : ")
-        filename = "value_fx_" + str(counter) + ".csv"
-        with open(filename, 'w') as csvfile:
-            csvwriter = csv.writer(csvfile)
-            csvwriter.writerow([V[0], V[1], V[2], V[3], V[4], V[5], V[6], V[7]])
-            csvwriter.writerow([V[8], V[9], V[10], V[11], V[12], V[13], V[14], V[15]])
-            csvwriter.writerow([V[16], V[17], V[18], V[19], V[20], V[21], V[22], V[23]])
-            csvwriter.writerow([V[24], V[25], V[26], V[27], V[28], V[29], V[30], V[31]])
-            csvwriter.writerow([V[32], V[33], V[34], V[35], V[36], V[37], V[38], V[39]])
-            csvwriter.writerow([V[40], V[41], V[42], V[43], V[44], V[45], V[46], V[47]])
-            csvwriter.writerow([V[48], V[49], V[50], V[51], V[52], V[53], V[54], V[55]])
-            csvwriter.writerow([V[56], V[57], V[58], V[59], V[60], V[61], V[62], V[63]])
-        print("Finished. Printed to: ", filename)
+        V = deepcopy(compute_policy_evaluation(pi, V,gam,mdp_probability, R, states,possible_actions, legal_actions ))
 
         # for each state s in S do
         for i in range(0, len(states)):
@@ -415,6 +442,8 @@ def main():
             for k in range(0,len(current_poss_actions)):
                 future_state_direction = current_poss_actions[k]
                 future_state_index = compute_future_state_index(future_state_direction, i)
+                if future_state_direction not in legal_actions[i]:
+                    future_state_index = i
                 policy_util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i], pi[i]) + policy_util
 
             max_util = -1000
@@ -426,6 +455,8 @@ def main():
                 for k in range(0 , len(current_poss_actions)):
                     future_state_direction = current_poss_actions[k]
                     future_state_index = compute_future_state_index(future_state_direction, i)
+                    if future_state_direction not in legal_actions[i]:
+                        future_state_index = i
                     util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i],current_poss_actions[j]) + util
 
                 # if this current action gives higher utility than the max, then update max utility.
@@ -439,30 +470,45 @@ def main():
                 pi[i] = best_future_action
                 unchanged = False
 
-        # once delta is small enough, we can exit.
+        # once policy is unchanged, we can exit.
         if unchanged:
             break
 
-        # prevent from breaking.
+        # prevent overload.
         counter = counter + 1
         if counter > 100000:
             print("OVERLOAD!!!!!!")
             break
 
-    print("1) Finished Policy Iteration! Printing Value Fx.. ")
-    filename = "value_fx.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow([V[0] , V[1] , V[2] ,  V[3] , V[4] , V[5] , V[6] ,  V[7]])
-        csvwriter.writerow([V[8] , V[9] , V[10],  V[11], V[12], V[13], V[14],  V[15]])
-        csvwriter.writerow([V[16], V[17], V[18],  V[19], V[20], V[21], V[22],  V[23]])
-        csvwriter.writerow([V[24], V[25], V[26],  V[27], V[28], V[29], V[30],  V[31]])
-        csvwriter.writerow([V[32], V[33], V[34],  V[35], V[36], V[37], V[38],  V[39]])
-        csvwriter.writerow([V[40], V[41], V[42],  V[43], V[44], V[45], V[46],  V[47]])
-        csvwriter.writerow([V[48], V[49], V[50],  V[51], V[52], V[53], V[54],  V[55]])
-        csvwriter.writerow([V[56], V[57], V[58],  V[59], V[60], V[61], V[62],  V[63]])
-    print("Finished. Printed to: ", filename)
-    print("")
+    # print Value function to excel file.
+    print_value_iter_result(V)
 
+    # Back out policy.
+    x = compute_state_index(x_init,states)
+    x_goal = compute_state_index(goal, states)
+    x_list = [x]
+    counter = 0
+    while True:
+        optimal_direction = pi[x]
+        x = compute_future_state_index(optimal_direction, x)
+        x_list.append(x)
+
+        #once you reach goal, finished!
+        if x == x_goal:
+            break
+        # prevent overload.
+        counter = counter + 1
+        if counter > 1000:
+            print("OVERLOAD!!!!!!")
+            break
+
+    # Convert state indices to state tuples and print.
+    x_final = []
+    print("2) Policy is as follows: ")
+    for i in range(0, len(x_list)):
+        x_final.append(states[x_list[i]])
+        print(i + 1, ". ", x_final[i])
+
+    print("Reached goal in: ", len(x_list), "steps by using Policy Iteration.")
 if __name__ == "__main__":
     main()
