@@ -205,6 +205,11 @@ class probability_transition():
             probability_return = self.compute_probability_left_arrow(future_state_direction, action)
         elif direction == "R":
             probability_return = self.compute_probability_right_arrow(future_state_direction, action)
+        elif direction == "0":
+            if future_state_direction == action:
+                probability_return = 1
+            else:
+                probability_return = 0
         return probability_return
 
 # -------------------------------------------------------------------------
