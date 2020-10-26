@@ -450,5 +450,11 @@ def main():
         x_final.append(states[x_list[i]])
         print(i + 1, ". ", x_final[i])
     print("Reached goal in: ", len(x_list), "steps by using Value Iteration.")
+
+    #####################################################
+    ####   Result testing:
+    #####################################################
+    
+
 if __name__ == "__main__":
     main()
