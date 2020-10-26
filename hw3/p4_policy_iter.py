@@ -561,9 +561,9 @@ def main():
     case_c_tuple = (2,5)
     O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
-    R = reward(O, goal)
+    # R = reward(O, goal)
     # R = reward_case_a(O, goal, case_a_tuple)
-    # R = reward_case_b(O, goal, case_b_tuple)
+    R = reward_case_b(O, goal, case_b_tuple)
     # R = reward_case_c(O, goal, case_c_tuple)
     # states
 
