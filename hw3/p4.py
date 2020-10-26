@@ -715,7 +715,6 @@ def main():
     # Back out optimal policy from V*, return optimal action and optimal state sequence based on initial state..
     [x_list, action_best_list] = compute_optimal_policy(x_init,goal,legal_actions,V, states)
 
-
     # print policy result:
     print_policy_result(x_list, states, action_best_list)
 

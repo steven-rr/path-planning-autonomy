@@ -21,9 +21,18 @@ import random
 
 # -------------------------------------------------------------------------
 #  Class : Probability transition
-#  Description: Holds transition probabilities.
+#  Description: Holds arrow map and arrow probabilities. Depending on,
+#               arrow direction and action, it will compute probabilities.
 # ------------------------------------------------------------------------
 class probability_transition():
+    """
+    The class is used to compute probability of going to state s', given state s,
+    and action a. compute_probability() is the main class function that does this.
+    This function will call one of the 4 helper functions , depending on the arrow.
+    Additionally, a probability distribution class function is also implemented,
+    mainly for simulation purposes. Given you have some policy, I model how the robot
+    would act by using this probability distribution in addition to random.random().
+    """
     def __init__(self, arrow_map, arrow_probability_up , arrow_probability_down, arrow_probability_left, arrow_probability_right):
         self.arrow_map = arrow_map
         self.arrow_probability_up = arrow_probability_up
@@ -540,6 +549,147 @@ class reward_case_c():
         else:
             reward_out = -1
         return reward_out
+
+# -------------------------------------------------------------------------
+#  Function : policy_iteration
+#  Description: Holds functions for computing reward based on states and
+#               obstacles.
+# ------------------------------------------------------------------------
+def policy_iteration(pi , V, gam, mdp_probability, R, states, possible_actions, legal_actions):
+    policy_iteration_result = []
+    counter = 0
+    while True:
+        unchanged = True
+
+        # Policy Evaluation:
+        V = deepcopy(compute_policy_evaluation(pi, V, gam, mdp_probability, R, states, possible_actions, legal_actions))
+
+        # for each state s in S do
+        for i in range(0, len(states)):
+            # Compute max utility for the current state, search over all possible actions
+            current_poss_actions = possible_actions[i]
+            util = 0
+
+            policy_util = 0
+            # Given state, and action from policy, loop thru all possible future states.
+            for k in range(0, len(current_poss_actions)):
+                future_state_direction = current_poss_actions[k]
+                future_state_index = compute_future_state_index(future_state_direction, i)
+                if future_state_direction not in legal_actions[i]:
+                    future_state_index = i
+                policy_util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction,
+                                                                                          states[i],
+                                                                                          pi[i]) + policy_util
+
+            max_util = -1000
+            best_future_action = 0
+            # Given state, loop over possible actions
+            for j in range(0, len(current_poss_actions)):
+
+                # Given the state, and the action, loop through all possible future states.
+                for k in range(0, len(current_poss_actions)):
+                    future_state_direction = current_poss_actions[k]
+                    future_state_index = compute_future_state_index(future_state_direction, i)
+                    if future_state_direction not in legal_actions[i]:
+                        future_state_index = i
+                    util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction,
+                                                                                       states[i],
+                                                                                       current_poss_actions[j]) + util
+
+                # if this current action gives higher utility than the max, then update max utility.
+                if util > max_util:
+                    max_util = util
+                    best_future_action = current_poss_actions[j]
+                util = 0
+
+            # if best action provided a better policy, update our policy to match the best one.
+            if max_util > policy_util:
+                pi[i] = best_future_action
+                unchanged = False
+
+        # once policy is unchanged, we can exit.
+        if unchanged:
+            break
+
+        # prevent overload.
+        counter = counter + 1
+        if counter > 100000:
+            print("OVERLOAD!!!!!!")
+            break
+
+    policy_iteration_result.append(V)
+    policy_iteration_result.append(pi)
+
+    return policy_iteration_result
+
+# -------------------------------------------------------------------------
+#  Function : compute_policy_list
+#  Description: Holds functions for computing reward based on states and
+#               obstacles.
+# ------------------------------------------------------------------------
+def compute_policy_list(pi, x_init, goal, legal_actions, states):
+    # Back out policy.
+    policy_iter_result = []
+    x = compute_state_index(x_init,states)
+    x_goal = compute_state_index(goal, states)
+    x_list = [x]
+    action_best_list = []
+    counter = 0
+    while True:
+        optimal_direction = pi[x]
+        x = compute_future_state_index(optimal_direction, x)
+        x_list.append(x)
+        action_best_list.append(optimal_direction)
+
+        #once you reach local minimum, finished!
+        if check_policy_final_step(pi, legal_actions, x):
+            break
+        # prevent overload.
+        counter = counter + 1
+        if counter > 1000:
+            print("OVERLOAD!!!!!!")
+            break
+
+    policy_iter_result.append(x_list)
+    policy_iter_result.append(action_best_list)
+    return policy_iter_result
+
+# -------------------------------------------------------------------------
+#  Function : run_simulation
+#  Description: Holds functions for computing reward based on states and
+#               obstacles.
+# ------------------------------------------------------------------------
+def run_simulation(simulation_run_number, mdp_probability, x_init, goal, action_best_list, states, legal_actions, R):
+
+    simulation_results = []
+    x_list = [[] for x in range(0, simulation_run_number)]
+    simulated_reward_list = []
+    succesful_attempts = 0
+    # loop over simulation runs.
+    for i in range(0, simulation_run_number):
+
+        # reinitialize
+        x = x_init
+        simulated_reward = 0
+
+        # attempt the policy. loop over actions within policy.
+        for j in range(0, len(action_best_list)):
+            desired_action = action_best_list[j]
+            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
+            final_action = coin_toss(probability_distribution)
+            if final_action in legal_actions[compute_state_index(x, states)]:
+                x = compute_future_state(final_action, x, states)
+                x_list[i].append(x)
+            simulated_reward = R.compute_reward(x) + simulated_reward
+
+        simulated_reward_list.append(simulated_reward)
+        # count number of succesful attempts
+        if x == goal:
+            succesful_attempts = succesful_attempts + 1
+
+    simulation_results.append(succesful_attempts)
+    simulation_results.append(simulated_reward_list)
+    return simulation_results
 # -------------------------------------------------------------------------
 #  Class : main
 #  Description: Holds functions for computing reward based on states and
@@ -561,9 +711,9 @@ def main():
     case_c_tuple = (2,5)
     O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
-    # R = reward(O, goal)
+    R = reward(O, goal)
     # R = reward_case_a(O, goal, case_a_tuple)
-    R = reward_case_b(O, goal, case_b_tuple)
+    # R = reward_case_b(O, goal, case_b_tuple)
     # R = reward_case_c(O, goal, case_c_tuple)
     # states
 
@@ -639,7 +789,6 @@ def main():
         V_[i] = 0
 
     # Policy Iteration:
-    counter = 0
     # instantiate policy pi, initialize to always move states to the right, unless in the right edge. in that case, move left.
     pi = {}
     right_edge = [7, 15, 23, 31, 39, 47, 55, 63]
@@ -650,119 +799,22 @@ def main():
             pi[i] = "R"
 
     # Begin Policy Iteration:
-    while True:
-        unchanged = True
+    [V, pi ] = policy_iteration(pi, V, gam,mdp_probability, R, states, possible_actions, legal_actions)
 
-        # Policy Evaluation:
-        V = deepcopy(compute_policy_evaluation(pi, V,gam,mdp_probability, R, states,possible_actions, legal_actions ))
-
-        # for each state s in S do
-        for i in range(0, len(states)):
-            # Compute max utility for the current state, search over all possible actions
-            current_poss_actions = possible_actions[i]
-            util = 0
-
-            policy_util =  0
-            # Given state, and action from policy, loop thru all possible future states.
-            for k in range(0,len(current_poss_actions)):
-                future_state_direction = current_poss_actions[k]
-                future_state_index = compute_future_state_index(future_state_direction, i)
-                if future_state_direction not in legal_actions[i]:
-                    future_state_index = i
-                policy_util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i], pi[i]) + policy_util
-
-            max_util = -1000
-            best_future_action = 0
-            # Given state, loop over possible actions
-            for j in range(0, len(current_poss_actions)):
-
-                # Given the state, and the action, loop through all possible future states.
-                for k in range(0 , len(current_poss_actions)):
-                    future_state_direction = current_poss_actions[k]
-                    future_state_index = compute_future_state_index(future_state_direction, i)
-                    if future_state_direction not in legal_actions[i]:
-                        future_state_index = i
-                    util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction, states[i],current_poss_actions[j]) + util
-
-                # if this current action gives higher utility than the max, then update max utility.
-                if util > max_util:
-                    max_util = util
-                    best_future_action = current_poss_actions[j]
-                util = 0
-
-            # if best action provided a better policy, update our policy to match the best one.
-            if max_util > policy_util:
-                pi[i] = best_future_action
-                unchanged = False
-
-        # once policy is unchanged, we can exit.
-        if unchanged:
-            break
-
-        # prevent overload.
-        counter = counter + 1
-        if counter > 100000:
-            print("OVERLOAD!!!!!!")
-            break
 
     # print Value function to excel file.
     print_value_iter_result(V)
     print_policy_iter_result(pi)
 
-    # Back out policy.
-    x = compute_state_index(x_init,states)
-    x_goal = compute_state_index(goal, states)
-    x_list = [x]
-    action_best_list = []
-    counter = 0
-    while True:
-        optimal_direction = pi[x]
-        x = compute_future_state_index(optimal_direction, x)
-        x_list.append(x)
-        action_best_list.append(optimal_direction)
-
-        #once you reach local minimum, finished!
-        if check_policy_final_step(pi, legal_actions, x):
-            break
-        # prevent overload.
-        counter = counter + 1
-        if counter > 1000:
-            print("OVERLOAD!!!!!!")
-            break
+    # given policy field, use x_initial and the optimal policy field to get the optimal policy list.
+    [x_list, action_best_list ]= compute_policy_list(pi, x_init, goal, legal_actions, states)
 
     # Convert state indices to state tuples and print.
     print_policy_policy_iter(x_list, states)
 
-    #####################################################
-    ####   Result testing:
-    #####################################################
-    # initialize x and reward.
+    # run simulation .
     simulation_run_number = 10000
-    x_list = [[] for x in range(0, simulation_run_number)]
-    simulated_reward_list = []
-
-    succesful_attempts = 0
-    # loop over simulation runs.
-    for i in range(0, simulation_run_number):
-
-        # reinitialize
-        x = x_init
-        simulated_reward = 0
-
-        # attempt the policy. loop over actions within policy.
-        for j in range(0, len(action_best_list)):
-            desired_action = action_best_list[j]
-            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
-            final_action = coin_toss(probability_distribution)
-            if final_action in legal_actions[compute_state_index(x, states)]:
-                x = compute_future_state(final_action, x, states)
-                x_list[i].append(x)
-            simulated_reward = R.compute_reward(x) + simulated_reward
-
-        simulated_reward_list.append(simulated_reward)
-        # count number of succesful attempts
-        if x == goal:
-            succesful_attempts = succesful_attempts + 1
+    [succesful_attempts, simulated_reward_list] = run_simulation(simulation_run_number, mdp_probability, x_init, goal, action_best_list, states, legal_actions, R)
 
     # print results to console.
     print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list)
