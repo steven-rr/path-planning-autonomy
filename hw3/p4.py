@@ -3,7 +3,7 @@
 # //|
 # //| Author : Steven Rivadeneira
 # //|
-# //| File Name : p4_partc_case_a.py
+# //| File Name : p4.py
 # //|
 # //| Description : Solves MDP using value iteration
 # //|
@@ -19,9 +19,18 @@ import csv
 import random
 # -------------------------------------------------------------------------
 #  Class : Probability transition
-#  Description: Holds transition probabilities.
+#  Description: Holds arrow map and arrow probabilities. Depending on,
+#               arrow direction and action, it will compute probabilities.
 # ------------------------------------------------------------------------
 class probability_transition():
+    """
+    The class is used to compute probability of going to state s' given state s,
+    and action a. compute_probability() is the main class function that does this.
+    This function will call one of the 4 helper functions , depending on the arrow.
+    Additionally, a probability distribution class function is also implemented,
+    mainly for simulation purposes. Given you have some policy, I model how the robot
+    would act by using this probability distribution in addition to random.random().
+    """
     def __init__(self, arrow_map, arrow_probability_up , arrow_probability_down, arrow_probability_left, arrow_probability_right):
         self.arrow_map = arrow_map
         self.arrow_probability_up = arrow_probability_up
@@ -29,7 +38,7 @@ class probability_transition():
         self.arrow_probability_left = arrow_probability_left
         self.arrow_probability_right = arrow_probability_right
 
-    # assume desired_state is some direction.
+    # Computing probabilities for left arrow.
     def compute_probability_left_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -70,7 +79,7 @@ class probability_transition():
                 result = self.arrow_probability_left[3][3] + result
         return result
 
-    # assume desired_state is some direction.
+    # Computing probabilities for right arrow.
     def compute_probability_right_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -111,7 +120,7 @@ class probability_transition():
                 result = self.arrow_probability_right[3][3] + result
         return result
 
-    # assume desired_state is some direction.
+    # Computing probabilities for down arrow.
     def compute_probability_down_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -152,7 +161,7 @@ class probability_transition():
                 result = self.arrow_probability_down[3][3] + result
         return result
 
-    # assume desired_state is some direction.
+    # Computing probabilities for up arrow.
     def compute_probability_up_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -191,11 +200,10 @@ class probability_transition():
                 result = self.arrow_probability_up[3][2] + result
             elif future_state_direction == "D":
                 result = self.arrow_probability_up[3][3] + result
-
         return result
-    # compute probability of desired state based on current state and current action.
-    def compute_probability(self, future_state_direction, current_state, action):
 
+    # compute probability of going to a future state based on current state and current action.
+    def compute_probability(self, future_state_direction, current_state, action):
         direction = self.arrow_map[(current_state[0], current_state[1])]
         probability_return = 0
         if direction == "U":
@@ -213,10 +221,10 @@ class probability_transition():
                 probability_return = 0
         return probability_return
 
+    # compute probability distribution from trying to do a certain action, given a current state.
     def compute_probability_distribution(self, desired_action, current_state):
         direction = self.arrow_map[(current_state[0], current_state[1])]
         probability_distribution_return = []
-
         if direction == "U":
             if desired_action == "U":
                 probability_distribution_return = self.arrow_probability_up[0]
@@ -262,17 +270,18 @@ class probability_transition():
                 probability_distribution_return = [0.0, 0.0, 1.0, 0.0]
             elif desired_action == "D":
                 probability_distribution_return = [0.0, 0.0, 0.0, 1.0]
-
         return probability_distribution_return
+
 # -------------------------------------------------------------------------
-#  Class : compute_init_index
+#  Function : compute_state_index
 #  Description: Given future state direction, and index, it returns future index.
 # ------------------------------------------------------------------------
 def compute_state_index(x_state_tuple, states):
     x_init_idx = list(states.keys())[list(states.values()).index(x_state_tuple)]
     return x_init_idx
+
 # -------------------------------------------------------------------------
-#  Class : compute_future_state_index
+#  Function : compute_future_state_index
 #  Description: Given future state direction, and index, it returns future index.
 # ------------------------------------------------------------------------
 def compute_future_state_index(future_state,i):
@@ -285,10 +294,9 @@ def compute_future_state_index(future_state,i):
         idx_out = i - 1
     elif future_state == "D":
         idx_out = i + 8
-
     return idx_out
 # -------------------------------------------------------------------------
-#  Class : compute_future_state
+#  Function : compute_future_state
 #  Description: Given action, state tuple, and state dict, returns future state tuple
 # ------------------------------------------------------------------------
 def compute_future_state(action, state_tuple, states):
@@ -297,7 +305,10 @@ def compute_future_state(action, state_tuple, states):
     future_state = states[future_state_idx]
     return future_state
 
-
+# -------------------------------------------------------------------------
+#  Function : print_value_iter_result
+#  Description: Given action, state tuple, and state dict, returns future state tuple
+# ------------------------------------------------------------------------
 def print_value_iter_result(V_):
     print("1) Finished Value Iteration! Printing Value Fx..")
     filename = "value_fx_value_iter.csv"
@@ -317,7 +328,7 @@ def print_value_iter_result(V_):
     print("")
 
 # -------------------------------------------------------------------------
-#  Class : coin_toss
+#  Function : coin_toss
 #  Description: Given a probability distribution, returns the actual action to occur.
 #               Assume that the probability distribution is = [U, R, L, D]
 # ------------------------------------------------------------------------
@@ -337,9 +348,13 @@ def coin_toss(probability_distribution):
         final_action = "L"
     elif num3 < random_number < num4:
         final_action = "D"
-
     return final_action
 
+# -------------------------------------------------------------------------
+#  Function : print_policy_result
+#  Description: Given a probability distribution, returns the actual action to occur.
+#               Assume that the probability distribution is = [U, R, L, D]
+# ------------------------------------------------------------------------
 def print_policy_result(x_list, states, action_best_list):
     x_final = []
     print("3) Policy is as follows: ")
@@ -353,7 +368,7 @@ def print_policy_result(x_list, states, action_best_list):
     print("Reached goal in: ", len(x_list), "steps by using Value Iteration.")
 
 # -------------------------------------------------------------------------
-#  Class : print_simulation_result
+#  Function : print_simulation_result
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 # ------------------------------------------------------------------------
@@ -365,6 +380,7 @@ def print_simulation_result(succesful_attempts, simulation_run_number, simulated
         reward_accumulator = simulated_reward_list[i] + reward_accumulator
     reward_average = reward_accumulator / len(simulated_reward_list)
     print(reward_average, "is the reward average. ")
+
 # -------------------------------------------------------------------------
 #  Class : Reward
 #  Description: Holds functions for computing reward based on states and
@@ -385,7 +401,7 @@ class reward():
         return reward_out
 
 # -------------------------------------------------------------------------
-#  Class : Reward
+#  Class : Reward for Part c Case a
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 # ------------------------------------------------------------------------
@@ -407,7 +423,7 @@ class reward_case_a():
         return reward_out
 
 # -------------------------------------------------------------------------
-#  Class : Reward
+#  Class : Reward for Part c Case b
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 # ------------------------------------------------------------------------
@@ -429,7 +445,7 @@ class reward_case_b():
         return reward_out
 
 # -------------------------------------------------------------------------
-#  Class : Reward
+#  Class : Reward for Part c Case c
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 # ------------------------------------------------------------------------
