@@ -273,6 +273,58 @@ class probability_transition():
         return probability_distribution_return
 
 # -------------------------------------------------------------------------
+#  Function : print_value_iter_result
+#  Description: Prints V field into a csv file, 8x8 grid for easy visualization.
+# ------------------------------------------------------------------------
+def print_value_iter_result(V_):
+    print("1) Finished Value Iteration! Printing Value Fx..")
+    filename = "value_fx_value_iter.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([V_[0] , V_[1] , V_[2] ,  V_[3] , V_[4] , V_[5] , V_[6] ,  V_[7]])
+        csvwriter.writerow([V_[8] , V_[9] , V_[10],  V_[11], V_[12], V_[13], V_[14],  V_[15]])
+        csvwriter.writerow([V_[16], V_[17], V_[18],  V_[19], V_[20], V_[21], V_[22],  V_[23]])
+        csvwriter.writerow([V_[24], V_[25], V_[26],  V_[27], V_[28], V_[29], V_[30],  V_[31]])
+        csvwriter.writerow([V_[32], V_[33], V_[34],  V_[35], V_[36], V_[37], V_[38],  V_[39]])
+        csvwriter.writerow([V_[40], V_[41], V_[42],  V_[43], V_[44], V_[45], V_[46],  V_[47]])
+        csvwriter.writerow([V_[48], V_[49], V_[50],  V_[51], V_[52], V_[53], V_[54],  V_[55]])
+        csvwriter.writerow([V_[56], V_[57], V_[58],  V_[59], V_[60], V_[61], V_[62],  V_[63]])
+    print("2) Output value function grid to: ", filename)
+    print("")
+    print("Time to back out the policy...")
+    print("")
+
+# -------------------------------------------------------------------------
+#  Function : print_policy_result
+#  Description: Given a probability distribution, returns the actual action to occur.
+#               Assume that the probability distribution is = [U, R, L, D]
+# ------------------------------------------------------------------------
+def print_policy_result(x_list, states, action_best_list):
+    x_final = []
+    print("3) Policy is as follows: ")
+    for i in range(0, len(x_list)):
+        x_final.append(states[x_list[i]])
+        if i == len(x_list) - 1:
+            print(i + 1, ". ", x_final[i], ". Action: No Action.")
+        else:
+            print(i + 1, ". ", x_final[i], ". Action: ", action_best_list[i])
+
+    print("Reached goal in: ", len(x_list), "steps by using Value Iteration.")
+
+# -------------------------------------------------------------------------
+#  Function : print_simulation_result
+#  Description: Prints to console the success rate and reward average across
+#               simulation runs.
+# ------------------------------------------------------------------------
+def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
+    print("3) Simulating ", simulation_run_number, " attempts...")
+    print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
+    reward_accumulator = 0
+    for i in range(0, len(simulated_reward_list)):
+        reward_accumulator = simulated_reward_list[i] + reward_accumulator
+    reward_average = reward_accumulator / len(simulated_reward_list)
+    print(reward_average, "is the reward average. ")
+# -------------------------------------------------------------------------
 #  Function : compute_state_index
 #  Description: Given a state tuple, and a state dictionary, return the state index.
 # ------------------------------------------------------------------------
@@ -330,58 +382,7 @@ def coin_toss(probability_distribution):
         final_action = "D"
     return final_action
 
-# -------------------------------------------------------------------------
-#  Function : print_value_iter_result
-#  Description: Given action, state tuple, and state dict, returns future state tuple
-# ------------------------------------------------------------------------
-def print_value_iter_result(V_):
-    print("1) Finished Value Iteration! Printing Value Fx..")
-    filename = "value_fx_value_iter.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow([V_[0] , V_[1] , V_[2] ,  V_[3] , V_[4] , V_[5] , V_[6] ,  V_[7]])
-        csvwriter.writerow([V_[8] , V_[9] , V_[10],  V_[11], V_[12], V_[13], V_[14],  V_[15]])
-        csvwriter.writerow([V_[16], V_[17], V_[18],  V_[19], V_[20], V_[21], V_[22],  V_[23]])
-        csvwriter.writerow([V_[24], V_[25], V_[26],  V_[27], V_[28], V_[29], V_[30],  V_[31]])
-        csvwriter.writerow([V_[32], V_[33], V_[34],  V_[35], V_[36], V_[37], V_[38],  V_[39]])
-        csvwriter.writerow([V_[40], V_[41], V_[42],  V_[43], V_[44], V_[45], V_[46],  V_[47]])
-        csvwriter.writerow([V_[48], V_[49], V_[50],  V_[51], V_[52], V_[53], V_[54],  V_[55]])
-        csvwriter.writerow([V_[56], V_[57], V_[58],  V_[59], V_[60], V_[61], V_[62],  V_[63]])
-    print("2) Output value function grid to: ", filename)
-    print("")
-    print("Time to back out the policy...")
-    print("")
 
-# -------------------------------------------------------------------------
-#  Function : print_policy_result
-#  Description: Given a probability distribution, returns the actual action to occur.
-#               Assume that the probability distribution is = [U, R, L, D]
-# ------------------------------------------------------------------------
-def print_policy_result(x_list, states, action_best_list):
-    x_final = []
-    print("3) Policy is as follows: ")
-    for i in range(0, len(x_list)):
-        x_final.append(states[x_list[i]])
-        if i == len(x_list) - 1:
-            print(i + 1, ". ", x_final[i], ". Action: No Action.")
-        else:
-            print(i + 1, ". ", x_final[i], ". Action: ", action_best_list[i])
-
-    print("Reached goal in: ", len(x_list), "steps by using Value Iteration.")
-
-# -------------------------------------------------------------------------
-#  Function : print_simulation_result
-#  Description: Holds functions for computing reward based on states and
-#               obstacles.
-# ------------------------------------------------------------------------
-def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
-    print("3) Simulating ", simulation_run_number, " attempts...")
-    print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
-    reward_accumulator = 0
-    for i in range(0, len(simulated_reward_list)):
-        reward_accumulator = simulated_reward_list[i] + reward_accumulator
-    reward_average = reward_accumulator / len(simulated_reward_list)
-    print(reward_average, "is the reward average. ")
 
 # -------------------------------------------------------------------------
 #  Class : Reward

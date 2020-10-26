@@ -40,7 +40,7 @@ class probability_transition():
         self.arrow_probability_left = arrow_probability_left
         self.arrow_probability_right = arrow_probability_right
 
-    # assume desired_state is some direction.
+    # Computing probabilities for left arrow.
     def compute_probability_left_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -81,7 +81,7 @@ class probability_transition():
                 result = self.arrow_probability_left[3][3] + result
         return result
 
-    # assume desired_state is some direction.
+    # Computing probabilities for right arrow.
     def compute_probability_right_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -122,7 +122,7 @@ class probability_transition():
                 result = self.arrow_probability_right[3][3] + result
         return result
 
-    # assume desired_state is some direction.
+    # Computing probabilities for down arrow.
     def compute_probability_down_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -163,7 +163,7 @@ class probability_transition():
                 result = self.arrow_probability_down[3][3] + result
         return result
 
-    # assume desired_state is some direction.
+    # Computing probabilities for up arrow.
     def compute_probability_up_arrow(self, future_state_direction, action):
         result = 0
         if action == "U":
@@ -204,7 +204,7 @@ class probability_transition():
                 result = self.arrow_probability_up[3][3] + result
 
         return result
-    # compute probability of desired state based on current state and current action.
+    # compute probability of going to a future state based on current state and current action.
     def compute_probability(self, future_state_direction, current_state, action):
 
         direction = self.arrow_map[(current_state[0], current_state[1])]
@@ -224,6 +224,7 @@ class probability_transition():
                 probability_return = 0.0
         return probability_return
 
+    # compute probability distribution from trying to do a certain action, given a current state.
     def compute_probability_distribution(self, desired_action, current_state):
         direction = self.arrow_map[(current_state[0], current_state[1])]
         probability_distribution_return = []
@@ -275,196 +276,6 @@ class probability_transition():
                 probability_distribution_return = [0.0, 0.0, 0.0, 1.0]
 
         return probability_distribution_return
-
-# -------------------------------------------------------------------------
-#  Class : compute_policy_evaluation
-#  Description: V(s) = R(s) + gam* summation over s' of P*V(s')
-#               V(s) - gam * summation over s' of P*V(s') = R(s)
-# ------------------------------------------------------------------------
-def compute_policy_evaluation(pi, U, gam, mdp_probability, R, states,possible_future_states, legal_future_states):
-    # for each state calculate a value iteration.
-    x = []
-    # sets reward coefficients for each state - R(s)
-    reward_list = []
-
-    # initialize return dictionary, V
-    V = {}
-    for i in range(0 , len(states)):
-        # initialize equation for row:
-        linear_eqn_i = [0]*len(states)
-        # append reward to reward_list - R(s)
-        reward_list.append(R.compute_reward(states[i]))
-        # set current state coefficients - V(s)
-        linear_eqn_i[i] = 1
-        # set future state coefficients - V(s')
-        current_poss_future_states = possible_future_states[i]
-        for j in range(0, len(current_poss_future_states)):
-            future_state = current_poss_future_states[j]
-            future_state_idx = compute_future_state_index(future_state, i )
-            future_state_probability = mdp_probability.compute_probability(future_state,states[i], pi[i])
-            if future_state not in legal_future_states[i]:
-                future_state_idx = i
-            linear_eqn_i[future_state_idx] = -1.0*gam*future_state_probability + linear_eqn_i[future_state_idx]
-        # append future state coefficients - V(s')
-        x.append(linear_eqn_i)
-
-
-
-
-    # do numpy manipulation of the linear equations, and the rewards.
-    A = np.array(x)
-    B = np.array(reward_list)
-    V_numpy = np.linalg.inv(A).dot(B)
-
-    for k in range(0, len(states)):
-        V[k] = V_numpy[k]
-
-    return V
-
-# -------------------------------------------------------------------------
-#  Class : compute_init_index
-#  Description: Given future state direction, and index, it returns future index.
-# ------------------------------------------------------------------------
-def compute_state_index(x_state_tuple, states):
-    x_init_idx = list(states.keys())[list(states.values()).index(x_state_tuple)]
-    return x_init_idx
-
-# -------------------------------------------------------------------------
-#  Class : print_simulation_result
-#  Description: Holds functions for computing reward based on states and
-#               obstacles.
-# ------------------------------------------------------------------------
-def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
-    print("3) Simulating ", simulation_run_number, " attempts...")
-    print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
-    reward_accumulator = 0
-    for i in range(0, len(simulated_reward_list)):
-        reward_accumulator = simulated_reward_list[i] + reward_accumulator
-    reward_average = reward_accumulator / len(simulated_reward_list)
-    print(reward_average, "is the reward average. ")
-
-# -------------------------------------------------------------------------
-#  Class : compute_future_state
-#  Description: Given action, state tuple, and state dict, returns future state tuple
-# ------------------------------------------------------------------------
-def compute_future_state(action, state_tuple, states):
-    state_idx = compute_state_index(state_tuple, states)
-    future_state_idx = compute_future_state_index(action, state_idx)
-    future_state = states[future_state_idx]
-    return future_state
-# -------------------------------------------------------------------------
-#  Class : Reward
-#  Description: Given future state direction, and index, it returns future index.
-# ------------------------------------------------------------------------
-def compute_future_state_index(future_state,i):
-    idx_out = 0
-    if future_state == "U":
-        idx_out = i - 8
-    elif future_state == "R":
-        idx_out = i + 1
-    elif future_state == "L":
-        idx_out = i - 1
-    elif future_state == "D":
-        idx_out = i + 8
-
-    return idx_out
-
-def print_value_iter_result(V):
-    print("1) Finished Policy Iteration! Printing Value Fx.. ")
-    filename = "value_fx_policy_iter.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow([V[0] , V[1] , V[2] ,  V[3] , V[4] , V[5] , V[6] ,  V[7]])
-        csvwriter.writerow([V[8] , V[9] , V[10],  V[11], V[12], V[13], V[14],  V[15]])
-        csvwriter.writerow([V[16], V[17], V[18],  V[19], V[20], V[21], V[22],  V[23]])
-        csvwriter.writerow([V[24], V[25], V[26],  V[27], V[28], V[29], V[30],  V[31]])
-        csvwriter.writerow([V[32], V[33], V[34],  V[35], V[36], V[37], V[38],  V[39]])
-        csvwriter.writerow([V[40], V[41], V[42],  V[43], V[44], V[45], V[46],  V[47]])
-        csvwriter.writerow([V[48], V[49], V[50],  V[51], V[52], V[53], V[54],  V[55]])
-        csvwriter.writerow([V[56], V[57], V[58],  V[59], V[60], V[61], V[62],  V[63]])
-    print("2) Output value function grid to: ", filename)
-    print("")
-    print("Time to back out the policy...")
-    print("")
-
-def print_policy_iter_result(pi):
-    print(" Printing Pi Fx..")
-    filename = "policy_fx_policy_iter.csv"
-    with open(filename, 'w') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow([pi[0] , pi[1] , pi[2] ,  pi[3] , pi[4] , pi[5] , pi[6] ,  pi[7]])
-        csvwriter.writerow([pi[8] , pi[9] , pi[10],  pi[11], pi[12], pi[13], pi[14],  pi[15]])
-        csvwriter.writerow([pi[16], pi[17], pi[18],  pi[19], pi[20], pi[21], pi[22],  pi[23]])
-        csvwriter.writerow([pi[24], pi[25], pi[26],  pi[27], pi[28], pi[29], pi[30],  pi[31]])
-        csvwriter.writerow([pi[32], pi[33], pi[34],  pi[35], pi[36], pi[37], pi[38],  pi[39]])
-        csvwriter.writerow([pi[40], pi[41], pi[42],  pi[43], pi[44], pi[45], pi[46],  pi[47]])
-        csvwriter.writerow([pi[48], pi[49], pi[50],  pi[51], pi[52], pi[53], pi[54],  pi[55]])
-        csvwriter.writerow([pi[56], pi[57], pi[58],  pi[59], pi[60], pi[61], pi[62],  pi[63]])
-    print("2) Output pi function grid to: ", filename)
-    print("")
-
-def print_policy_policy_iter(x_list, states):
-    # Convert state indices to state tuples and print.
-    x_final = []
-    print("2) Policy is as follows: ")
-    for i in range(0, len(x_list)):
-        x_final.append(states[x_list[i]])
-        print(i + 1, ". ", x_final[i])
-    print("Reached goal in: ", len(x_list), "steps by using Policy Iteration.")
-# -------------------------------------------------------------------------
-#  Class : check_policy_final_step
-#  Description: Check for opposite steps. If number of opposite steps is the number of possible action,
-#               you're at the local minimum/goal!
-# ------------------------------------------------------------------------
-def check_policy_final_step(pi, legal_actions, x_index):
-    possible_actions = legal_actions[x_index]
-    possible_state_indices = []
-    counter = 0
-    final_step = False
-    for i in range(0, len(possible_actions)):
-        current_future_state_index = compute_future_state_index(possible_actions[i], x_index)
-        possible_state_indices.append(current_future_state_index)
-
-        if possible_actions[i] == "U":
-            if pi[current_future_state_index] == "D":
-                counter = counter + 1
-        if possible_actions[i] == "R":
-            if pi[current_future_state_index] == "L":
-                counter = counter + 1
-        if possible_actions[i] == "L":
-            if pi[current_future_state_index] == "R":
-                counter = counter + 1
-        if possible_actions[i] == "D":
-            if pi[current_future_state_index] == "U":
-                counter = counter + 1
-
-    if counter == len(possible_actions):
-        final_step = True
-    return final_step
-
-# -------------------------------------------------------------------------
-#  Class : coin_toss
-#  Description: Given a probability distribution, returns the actual action to occur.
-#               Assume that the probability distribution is = [U, R, L, D]
-# ------------------------------------------------------------------------
-def coin_toss(probability_distribution):
-    num1 = probability_distribution[0]
-    num2 = num1 + probability_distribution[1]
-    num3 = num2 + probability_distribution[2]
-    num4 = num3 + probability_distribution[3]
-    random_number = random.random()
-    final_action = 0
-    # check where the random number lands, and perform the final action accordingly.
-    if random_number < num1:
-        final_action = "U"
-    elif num1 < random_number < num2:
-        final_action = "R"
-    elif num2 < random_number < num3:
-        final_action = "L"
-    elif num3 < random_number < num4:
-        final_action = "D"
-
-    return final_action
 
 # -------------------------------------------------------------------------
 #  Class : Reward
@@ -551,9 +362,161 @@ class reward_case_c():
         return reward_out
 
 # -------------------------------------------------------------------------
+#  Function : print_value_iter_result
+#  Description: Prints V field into a csv file, 8x8 grid for easy visualization.
+# ------------------------------------------------------------------------
+def print_value_iter_result(V):
+    print("1) Finished Policy Iteration! Printing Value Fx.. ")
+    filename = "value_fx_policy_iter.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([V[0] , V[1] , V[2] ,  V[3] , V[4] , V[5] , V[6] ,  V[7]])
+        csvwriter.writerow([V[8] , V[9] , V[10],  V[11], V[12], V[13], V[14],  V[15]])
+        csvwriter.writerow([V[16], V[17], V[18],  V[19], V[20], V[21], V[22],  V[23]])
+        csvwriter.writerow([V[24], V[25], V[26],  V[27], V[28], V[29], V[30],  V[31]])
+        csvwriter.writerow([V[32], V[33], V[34],  V[35], V[36], V[37], V[38],  V[39]])
+        csvwriter.writerow([V[40], V[41], V[42],  V[43], V[44], V[45], V[46],  V[47]])
+        csvwriter.writerow([V[48], V[49], V[50],  V[51], V[52], V[53], V[54],  V[55]])
+        csvwriter.writerow([V[56], V[57], V[58],  V[59], V[60], V[61], V[62],  V[63]])
+    print("2) Output value function grid to: ", filename)
+
+
+# -------------------------------------------------------------------------
+#  Function : print_policy_iter_result
+#  Description: Prints pi field into a csv file, 8x8 grid for easy visualization.
+# ------------------------------------------------------------------------
+def print_policy_iter_result(pi):
+    print("Printing Pi Fx..")
+    filename = "policy_fx_policy_iter.csv"
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([pi[0] , pi[1] , pi[2] ,  pi[3] , pi[4] , pi[5] , pi[6] ,  pi[7]])
+        csvwriter.writerow([pi[8] , pi[9] , pi[10],  pi[11], pi[12], pi[13], pi[14],  pi[15]])
+        csvwriter.writerow([pi[16], pi[17], pi[18],  pi[19], pi[20], pi[21], pi[22],  pi[23]])
+        csvwriter.writerow([pi[24], pi[25], pi[26],  pi[27], pi[28], pi[29], pi[30],  pi[31]])
+        csvwriter.writerow([pi[32], pi[33], pi[34],  pi[35], pi[36], pi[37], pi[38],  pi[39]])
+        csvwriter.writerow([pi[40], pi[41], pi[42],  pi[43], pi[44], pi[45], pi[46],  pi[47]])
+        csvwriter.writerow([pi[48], pi[49], pi[50],  pi[51], pi[52], pi[53], pi[54],  pi[55]])
+        csvwriter.writerow([pi[56], pi[57], pi[58],  pi[59], pi[60], pi[61], pi[62],  pi[63]])
+    print("3) Output pi function grid to: ", filename)
+    print("")
+    print("Time to back out the policy, given the initial condition ...")
+    print("")
+
+# -------------------------------------------------------------------------
+#  Function : print_policy_policy_iter
+#  Description: Prints to console the success rate and reward average across
+#               simulation runs.
+# ------------------------------------------------------------------------
+def print_policy_policy_iter(x_list, states, action_best_list):
+    # Convert state indices to state tuples and print.
+    x_final = []
+    print("2) Policy is as follows: ")
+    for i in range(0, len(x_list)):
+        x_final.append(states[x_list[i]])
+        if i == len(x_list) - 1:
+            print(i + 1, ". ", x_final[i], ". Action: No Action.")
+        else:
+            print(i + 1, ". ", x_final[i], ". Action: ", action_best_list[i])
+    print("Reached goal in: ", len(x_list), "steps by using Policy Iteration.")
+
+# -------------------------------------------------------------------------
+#  Function : print_simulation_result
+#  Description: Prints to console the success rate and reward average across
+#               simulation runs.
+# ------------------------------------------------------------------------
+def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
+    print("3) Simulating ", simulation_run_number, " attempts...")
+    print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
+    reward_accumulator = 0
+    for i in range(0, len(simulated_reward_list)):
+        reward_accumulator = simulated_reward_list[i] + reward_accumulator
+    reward_average = reward_accumulator / len(simulated_reward_list)
+    print(reward_average, "is the reward average. ")
+
+
+# -------------------------------------------------------------------------
+#  Function : compute_state_index
+#  Description: Given a state tuple, and a state dictionary, return the state index.
+# ------------------------------------------------------------------------
+def compute_state_index(x_state_tuple, states):
+    x_init_idx = list(states.keys())[list(states.values()).index(x_state_tuple)]
+    return x_init_idx
+
+# -------------------------------------------------------------------------
+#  Function : compute_future_state
+#  Description: Given action, state tuple, and state dict, returns future state tuple
+# ------------------------------------------------------------------------
+def compute_future_state(action, state_tuple, states):
+    state_idx = compute_state_index(state_tuple, states)
+    future_state_idx = compute_future_state_index(action, state_idx)
+    future_state = states[future_state_idx]
+    return future_state
+
+# -------------------------------------------------------------------------
+#  Function : compute_future_state_index
+#  Description: Given an action and a state index, return the future index
+#               after taking the action in a certain direction.
+# ------------------------------------------------------------------------
+def compute_future_state_index(future_state,i):
+    idx_out = 0
+    if future_state == "U":
+        idx_out = i - 8
+    elif future_state == "R":
+        idx_out = i + 1
+    elif future_state == "L":
+        idx_out = i - 1
+    elif future_state == "D":
+        idx_out = i + 8
+    return idx_out
+
+# -------------------------------------------------------------------------
+#  Function : compute_policy_evaluation
+#  Description: Solves the system of linear equations for V(s) during policy iteration.
+#               V(s) = R(s) + gam* summation over s' of P*V(s')
+#               V(s) - gam * summation over s' of P*V(s') = R(s)
+# ------------------------------------------------------------------------
+def compute_policy_evaluation(pi, U, gam, mdp_probability, R, states,possible_future_states, legal_future_states):
+    # for each state calculate a value iteration.
+    x = []
+    # sets reward coefficients for each state - R(s)
+    reward_list = []
+
+    # initialize return dictionary, V
+    V = {}
+    for i in range(0 , len(states)):
+        # initialize equation for row:
+        linear_eqn_i = [0]*len(states)
+        # append reward to reward_list - R(s)
+        reward_list.append(R.compute_reward(states[i]))
+        # set current state coefficients - V(s)
+        linear_eqn_i[i] = 1
+        # set future state coefficients - V(s')
+        current_poss_future_states = possible_future_states[i]
+        for j in range(0, len(current_poss_future_states)):
+            future_state = current_poss_future_states[j]
+            future_state_idx = compute_future_state_index(future_state, i )
+            future_state_probability = mdp_probability.compute_probability(future_state,states[i], pi[i])
+            if future_state not in legal_future_states[i]:
+                future_state_idx = i
+            linear_eqn_i[future_state_idx] = -1.0*gam*future_state_probability + linear_eqn_i[future_state_idx]
+        # append future state coefficients - V(s')
+        x.append(linear_eqn_i)
+
+    # do numpy manipulation of the linear equations, and the rewards.
+    A = np.array(x)
+    B = np.array(reward_list)
+    V_numpy = np.linalg.inv(A).dot(B)
+
+    for k in range(0, len(states)):
+        V[k] = V_numpy[k]
+
+    return V
+
+
+# -------------------------------------------------------------------------
 #  Function : policy_iteration
-#  Description: Holds functions for computing reward based on states and
-#               obstacles.
+#  Description: Does Policy Iteration algorithm. Returns Value grid , and pi grid.
 # ------------------------------------------------------------------------
 def policy_iteration(pi , V, gam, mdp_probability, R, states, possible_actions, legal_actions):
     policy_iteration_result = []
@@ -623,9 +586,40 @@ def policy_iteration(pi , V, gam, mdp_probability, R, states, possible_actions, 
     return policy_iteration_result
 
 # -------------------------------------------------------------------------
+#  Class : check_policy_final_step
+#  Description: Check if policy has converged. If ALL the optimal policy squares around
+#               state "s", just take you back to state "s", you're at the local minimum/goal!
+# ------------------------------------------------------------------------
+def check_policy_final_step(pi, legal_actions, x_index):
+    possible_actions = legal_actions[x_index]
+    possible_state_indices = []
+    counter = 0
+    final_step = False
+    for i in range(0, len(possible_actions)):
+        current_future_state_index = compute_future_state_index(possible_actions[i], x_index)
+        possible_state_indices.append(current_future_state_index)
+
+        if possible_actions[i] == "U":
+            if pi[current_future_state_index] == "D":
+                counter = counter + 1
+        if possible_actions[i] == "R":
+            if pi[current_future_state_index] == "L":
+                counter = counter + 1
+        if possible_actions[i] == "L":
+            if pi[current_future_state_index] == "R":
+                counter = counter + 1
+        if possible_actions[i] == "D":
+            if pi[current_future_state_index] == "U":
+                counter = counter + 1
+
+    if counter == len(possible_actions):
+        final_step = True
+    return final_step
+
+# -------------------------------------------------------------------------
 #  Function : compute_policy_list
-#  Description: Holds functions for computing reward based on states and
-#               obstacles.
+#  Description: Given the optimal 8x8 policy grid, computes the policy list, given
+#               that you start at x_init.
 # ------------------------------------------------------------------------
 def compute_policy_list(pi, x_init, goal, legal_actions, states):
     # Back out policy.
@@ -655,9 +649,33 @@ def compute_policy_list(pi, x_init, goal, legal_actions, states):
     return policy_iter_result
 
 # -------------------------------------------------------------------------
+#  Class : coin_toss
+#  Description: Given a probability distribution, returns the actual action to occur.
+#               Assume that the probability distribution is = [U, R, L, D]
+# ------------------------------------------------------------------------
+def coin_toss(probability_distribution):
+    num1 = probability_distribution[0]
+    num2 = num1 + probability_distribution[1]
+    num3 = num2 + probability_distribution[2]
+    num4 = num3 + probability_distribution[3]
+    random_number = random.random()
+    final_action = 0
+    # check where the random number lands, and perform the final action accordingly.
+    if random_number < num1:
+        final_action = "U"
+    elif num1 < random_number < num2:
+        final_action = "R"
+    elif num2 < random_number < num3:
+        final_action = "L"
+    elif num3 < random_number < num4:
+        final_action = "D"
+
+    return final_action
+
+# -------------------------------------------------------------------------
 #  Function : run_simulation
-#  Description: Holds functions for computing reward based on states and
-#               obstacles.
+#  Description:  runs simulation by using coin_toss helper function. The simulation
+#                will run n times, where n = simulation_run_number.
 # ------------------------------------------------------------------------
 def run_simulation(simulation_run_number, mdp_probability, x_init, goal, action_best_list, states, legal_actions, R):
 
@@ -798,7 +816,7 @@ def main():
         else:
             pi[i] = "R"
 
-    # Begin Policy Iteration:
+    # Policy Iteration:
     [V, pi ] = policy_iteration(pi, V, gam,mdp_probability, R, states, possible_actions, legal_actions)
 
 
@@ -809,8 +827,8 @@ def main():
     # given policy field, use x_initial and the optimal policy field to get the optimal policy list.
     [x_list, action_best_list ]= compute_policy_list(pi, x_init, goal, legal_actions, states)
 
-    # Convert state indices to state tuples and print.
-    print_policy_policy_iter(x_list, states)
+    # print to console the optimal state tuple sequence ,and optimal actions.
+    print_policy_policy_iter(x_list, states, action_best_list)
 
     # run simulation .
     simulation_run_number = 10000
