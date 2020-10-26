@@ -661,7 +661,7 @@ def main():
     ####   Result testing:
     #####################################################
     # initialize x and reward.
-    simulation_run_number = 10000
+    simulation_run_number = 100000
     x_list = [[] for x in range(0, simulation_run_number)]
     simulated_reward_list = []
 
