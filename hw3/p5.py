@@ -656,12 +656,12 @@ def compute_policy_list(pi, x_init, goal, legal_actions, states):
 def coin_toss(probability_distribution):
     """
     random.random() generates a number between 0 and 1 uniformly.
-    Each action has an associated probability and they all probabilities up to one,
-    therefore I create intervals, where the interval sizes are based on the
-    probabilities. The more likely a probability, the bigger the interval.
-    Then, I simply use random.random(), if the random number falls in the interval,
-    then that respective action is the one the simulated robot will take based on the
-    probability distribution.
+    Each action has an associated probability and all probabilities add up to one,
+    therefore I partition the interval [0, 1] into smaller intervals, where the partitioned
+    interval sizes are based on the probabilities. The more likely an action, the bigger
+    the partition. Then, I simply use random.random() to generate a number between 0 and 1.
+    If the random number falls in the interval partition, then that respective action is the
+    one the simulated robot will take based on the probability distribution.
     """
     num1 = probability_distribution[0]
     num2 = num1 + probability_distribution[1]
