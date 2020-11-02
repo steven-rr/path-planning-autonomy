@@ -382,22 +382,6 @@ def print_value_iter_result(V_):
     print("Time to back out the policy...")
     print("")
 
-# -------------------------------------------------------------------------
-#  Function : print_policy_result
-#  Description: Given a probability distribution, returns the actual action to occur.
-#               Assume that the probability distribution is = [U, R, L, D]
-# ------------------------------------------------------------------------
-def print_policy_result(x_list, states, action_best_list):
-    x_final = []
-    print("3) Policy is as follows: ")
-    for i in range(0, len(x_list)):
-        x_final.append(states[x_list[i]])
-        if i == len(x_list) - 1:
-            print(i + 1, ". ", x_final[i], ". Action: No Action.")
-        else:
-            print(i + 1, ". ", x_final[i], ". Action: ", action_best_list[i])
-
-    print("Reached goal in: ", len(x_list), "steps by using Value Iteration.")
 
 # -------------------------------------------------------------------------
 #  Function : print_simulation_result
@@ -437,6 +421,7 @@ def compute_future_state_index(future_state,i):
     elif future_state == "D":
         idx_out = i + 8
     return idx_out
+
 
 # -------------------------------------------------------------------------
 #  Function : compute_future_state
@@ -513,49 +498,75 @@ def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, le
 #               -returns the optimal policy as variable: "action_best_list"
 #               -returns optimal intended state sequence:  "x_list".
 # ------------------------------------------------------------------------
-def compute_optimal_policy(x_init, goal, legal_actions,V, states):
+def compute_optimal_policy(x_init, goal, legal_actions,V, states, mdp_probability, gam):
     # Compute Policy based on optimal Value function V*
+    all_moves = ['U','R','L','D']
     x = compute_state_index(x_init,states)
     x_goal = compute_state_index(goal, states)
     x_list = [x]
     action_best = 0
     action_best_list = []
     optimal_policy_results = []
+    optimal_policy_dict = {}
     counter = 0
-    while True:
-        current_poss_actions = legal_actions[x]
-        # check through all possible actions of the current state, go to action which provides the highest value.
-        V_best = -1000
-        x_best = 0
-        action_best = 0
-        for i in range(0, len(current_poss_actions)):
-            poss_state = compute_future_state_index(current_poss_actions[i], x)
-            if V[poss_state] > V_best:
+    # check through all possible actions of the current state, go to action which provides the highest value.
+    x_best = 0
+    action_best = 0
+    for i in range(0, len(states)):
+        q_max = -1000
+        current_poss_actions = legal_actions[i]
+        # loop over possible actions in given state.
+        for j in range(0, len(current_poss_actions)):
+            poss_state = compute_future_state_index(current_poss_actions[j], i)
+            # loop over final actions, given a state and given a desired action.
+            q_current = 0
+            for k in range(0, len(all_moves)):
+                if all_moves[k] in current_poss_actions:
+                    x_next = compute_future_state_index(all_moves[k], i)
+                    q_current = gam*V[x_next]*mdp_probability.compute_probability(all_moves[k], states[i], current_poss_actions[j], goal) + q_current
+                else:
+                    q_current = gam*V[i]*mdp_probability.compute_probability(all_moves[k], states[i], current_poss_actions[j], goal) + q_current
+            if q_current > q_max:
                 V_best = V[poss_state]
+                q_max = q_current
                 x_best = poss_state
-                action_best = current_poss_actions[i]
+                action_best = current_poss_actions[j]
+                optimal_policy_dict[i] = current_poss_actions[j]
+            #if i arrived at local max or min, action S, unless i can bump into a wall:
+            if states[i] == goal:
+                optimal_policy_dict[i] = "S"
+                for k in range(0, len(all_moves)):
+                    if all_moves[k] not in current_poss_actions:
+                        optimal_policy_dict[i] = all_moves[k]
 
-        # stop if i arrived at a local maximum for Value function:
-        if V[x] > V_best:
-            if x == x_goal:
-                print("Policy is derived! From the start position, I can reach the goal!")
-            else:
-                print("Policy is derived! From the start position, I can reach a local minimum!")
-            break
-        #update x to be the one with the biggest Value.
-        x = x_best
-        x_list.append(x_best)
-        action_best_list.append(action_best)
+    # maybe create a fx for this:
+    print("Policy is derived!")
+    for i in range(0, len(optimal_policy_dict)):
+        if (i+1) % 8 == 0:
+            print(optimal_policy_dict[i])
+        else:
+            print(optimal_policy_dict[i], end=" ")
 
+    print("Printing policy to.. : " , end=" ")
+    filename = "policy_grid_value_iter.csv"
+    print(filename)
+    with open(filename, 'w') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow([optimal_policy_dict[0], optimal_policy_dict[1], optimal_policy_dict[2], optimal_policy_dict[3], optimal_policy_dict[4], optimal_policy_dict[5], optimal_policy_dict[6], optimal_policy_dict[7]])
+        csvwriter.writerow([optimal_policy_dict[8], optimal_policy_dict[9], optimal_policy_dict[10], optimal_policy_dict[11], optimal_policy_dict[12], optimal_policy_dict[13], optimal_policy_dict[14], optimal_policy_dict[15]])
+        csvwriter.writerow([optimal_policy_dict[16], optimal_policy_dict[17], optimal_policy_dict[18], optimal_policy_dict[19], optimal_policy_dict[20], optimal_policy_dict[21], optimal_policy_dict[22], optimal_policy_dict[23]])
+        csvwriter.writerow([optimal_policy_dict[24], optimal_policy_dict[25], optimal_policy_dict[26], optimal_policy_dict[27], optimal_policy_dict[28], optimal_policy_dict[29], optimal_policy_dict[30], optimal_policy_dict[31]])
+        csvwriter.writerow([optimal_policy_dict[32], optimal_policy_dict[33], optimal_policy_dict[34], optimal_policy_dict[35], optimal_policy_dict[36], optimal_policy_dict[37], optimal_policy_dict[38], optimal_policy_dict[39]])
+        csvwriter.writerow([optimal_policy_dict[40], optimal_policy_dict[41], optimal_policy_dict[42], optimal_policy_dict[43], optimal_policy_dict[44], optimal_policy_dict[45], optimal_policy_dict[46], optimal_policy_dict[47]])
+        csvwriter.writerow([optimal_policy_dict[48], optimal_policy_dict[49], optimal_policy_dict[50], optimal_policy_dict[51], optimal_policy_dict[52], optimal_policy_dict[53], optimal_policy_dict[54], optimal_policy_dict[55]])
+        csvwriter.writerow([optimal_policy_dict[56], optimal_policy_dict[57], optimal_policy_dict[58], optimal_policy_dict[59], optimal_policy_dict[60], optimal_policy_dict[61], optimal_policy_dict[62], optimal_policy_dict[63]])
+    print("2) Output policy grid to: ", filename)
+    #update x to be the one with the biggest Value.
+    x = x_best
+    x_list.append(x_best)
+    action_best_list.append(action_best)
 
-        #prevent overflow
-        counter = counter + 1
-        if counter > 100000:
-            print("OVERFLOW!!!!!!!!")
-            break
-    optimal_policy_results.append(x_list)
-    optimal_policy_results.append(action_best_list)
-    return optimal_policy_results
+    return optimal_policy_dict
 
 # -------------------------------------------------------------------------
 #  Function : coin_toss
@@ -595,33 +606,33 @@ def coin_toss(probability_distribution):
 #               simulations to run, it computes how many times robot can go from x_init
 #               to x_goal. Returns number of succesful attempts, and the reward list.
 # ------------------------------------------------------------------------
-def run_simulation(simulation_run_number, action_best_list, mdp_probability, legal_actions, x_init, goal, states, R):
+def run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R):
 
     x_list = [[] for x in range(0, simulation_run_number)]
     simulated_reward_list = []
     succesful_attempts = 0
     simulation_results = []
+
     # loop over simulation runs.
     for i in range(0, simulation_run_number):
-
-        # reinitialize
-        x = x_init
+        # initialize x to initial position and reward to zero.
+        x = compute_state_index(x_init, states)
+        x_list[i].append(x)
         simulated_reward = 0
-
-        # attempt the policy. loop over actions within policy.
-        for j in range(0, len(action_best_list)):
-            desired_action = action_best_list[j]
-            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
+        while True:
+            # attempt the best action at given state.
+            desired_action = pi[x]
+            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, states[x])
             final_action = coin_toss(probability_distribution)
-            if final_action in legal_actions[compute_state_index(x, states)]:
-                x = compute_future_state(final_action, x, states)
-                x_list[i].append(x)
+            if final_action in legal_actions[x]:
+                x = compute_future_state_index(final_action, x)
+            x_list[i].append(x)
             simulated_reward = R.compute_reward(x) + simulated_reward
-
-        simulated_reward_list.append(simulated_reward)
-        # count number of succesful attempts
-        if x == goal:
-            succesful_attempts = succesful_attempts + 1
+            simulated_reward_list.append(simulated_reward)
+            # count number of succesful attempts
+            if x == goal:
+                succesful_attempts = succesful_attempts + 1
+                break
 
     simulation_results.append(simulated_reward_list)
     simulation_results.append(succesful_attempts)
@@ -737,14 +748,12 @@ def main():
     print_value_iter_result(V_)
 
     # Back out optimal policy from V*, return optimal action and optimal state sequence based on initial state..
-    [x_list, action_best_list] = compute_optimal_policy(x_init,goal,legal_actions,V, states)
+    pi = compute_optimal_policy(x_init,goal,legal_actions,V, states ,mdp_probability, gam)
 
-    # print policy result:
-    print_policy_result(x_list, states, action_best_list)
 
     # Run simulation with policy result. Initialize how many runs you want to do:
     simulation_run_number = 100000
-    [simulated_reward_list, succesful_attempts] = run_simulation(simulation_run_number, action_best_list, mdp_probability, legal_actions, x_init, goal, states, R)
+    [simulated_reward_list, succesful_attempts] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
 
     # print simulation results to console.
     print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list)

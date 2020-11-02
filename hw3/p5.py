@@ -551,6 +551,8 @@ def policy_iteration(pi , V, gam, mdp_probability, R, states, possible_actions, 
 
                 # Given the state, and the action, loop through all possible future states.
                 for k in range(0, len(current_poss_actions)):
+                    if i == 30:
+                        print("im here")
                     future_state_direction = current_poss_actions[k]
                     future_state_index = compute_future_state_index(future_state_direction, i)
                     if future_state_direction not in legal_actions[i]:
@@ -569,6 +571,7 @@ def policy_iteration(pi , V, gam, mdp_probability, R, states, possible_actions, 
             if max_util > policy_util:
                 pi[i] = best_future_action
                 unchanged = False
+
 
         # once policy is unchanged, we can exit.
         if unchanged:
