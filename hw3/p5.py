@@ -765,6 +765,7 @@ def main():
     tuple2 = (1,5)
     tuple3 = (2,5)
     tuple_list = [tuple1, tuple2, tuple3]
+    sim_flag = True
     # R = reward(O, goal)
     # R = reward_case_a(O, goal, tuple_list)
     R = reward_case_b(O, goal, tuple_list)
@@ -866,12 +867,13 @@ def main():
     # print to console the optimal state tuple sequence ,and optimal actions.
     print_policy_policy_iter(x_list, states, action_best_list)
 
-    # run simulation .
-    simulation_run_number = 20000
-    [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
+    if sim_flag == True:
+        # run simulation .
+        simulation_run_number = 100000
+        [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
 
-    # print results to console.
-    print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list, steps_required)
+        # print results to console.
+        print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list, steps_required)
 
 
 if __name__ == "__main__":

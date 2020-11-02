@@ -203,27 +203,24 @@ class probability_transition():
         return result
 
     # compute probability of going to a future state based on current state and current action.
-    def compute_probability(self, future_state_direction, current_state, action, goal):
+    def compute_probability(self, future_state_direction, current_state, action):
         direction = self.arrow_map[(current_state[0], current_state[1])]
         probability_return = 0
-        # if current state is the goal state, don't move. Don't do {U, R, L, D}
-        if current_state == goal:
-            return 0
 
-        else:
-            if direction == "U":
-                probability_return = self.compute_probability_up_arrow(future_state_direction, action)
-            elif direction == "D":
-                probability_return = self.compute_probability_down_arrow(future_state_direction, action)
-            elif direction == "L":
-                probability_return = self.compute_probability_left_arrow(future_state_direction, action)
-            elif direction == "R":
-                probability_return = self.compute_probability_right_arrow(future_state_direction, action)
-            elif direction == "0":
-                if future_state_direction == action:
-                    probability_return = 1
-                else:
-                    probability_return = 0
+
+        if direction == "U":
+            probability_return = self.compute_probability_up_arrow(future_state_direction, action)
+        elif direction == "D":
+            probability_return = self.compute_probability_down_arrow(future_state_direction, action)
+        elif direction == "L":
+            probability_return = self.compute_probability_left_arrow(future_state_direction, action)
+        elif direction == "R":
+            probability_return = self.compute_probability_right_arrow(future_state_direction, action)
+        elif direction == "0":
+            if future_state_direction == action:
+                probability_return = 1
+            else:
+                probability_return = 0
         return probability_return
 
     # compute probability distribution from trying to do a certain action, given a current state.
@@ -445,7 +442,7 @@ def compute_future_state(action, state_tuple, states):
 #  Function : value_iteration
 #  Description: Does Value iteration, returns the optimal value function.
 # ------------------------------------------------------------------------
-def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, legal_actions, states, goal):
+def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, legal_actions, states):
 
     counter = 0
     delta = 10
@@ -469,20 +466,15 @@ def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, le
                         future_state_index = i
                     util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction,
                                                                                        states[i],
-                                                                                       current_poss_actions[j], goal) + util
+                                                                                       current_poss_actions[j]) + util
 
                 # if this current action gives higher utility than the max, then update max utility.
                 if util > max_util:
                     max_util = util
                 util = 0
 
-            # If state in goal state, allow action = stay.
-            if states[i] == goal:
-                util = V[i]
-                if util > max_util:
-                    max_util = util
 
-                # update V'. Reward plus max utility.
+            # update V'. Reward plus max utility.
             V_[i] = R.compute_reward(states[i]) + gam * max_util
 
             # check for delta update.
@@ -523,28 +515,29 @@ def compute_optimal_policy(x_init, goal, legal_actions,V, states, mdp_probabilit
         q_max = -1000
         current_poss_actions = legal_actions[i]
         # loop over possible actions in given state.
-        for j in range(0, len(current_poss_actions)):
-            poss_state = compute_future_state_index(current_poss_actions[j], i)
+        for j in range(0, len(all_moves)):
+            if all_moves[j] in current_poss_actions:
+                poss_state = compute_future_state_index(all_moves[j], i)
+            else:
+                poss_state = i
+
             # loop over final actions, given a state and given a desired action.
             q_current = 0
             for k in range(0, len(all_moves)):
                 if all_moves[k] in current_poss_actions:
                     x_next = compute_future_state_index(all_moves[k], i)
-                    q_current = gam*V[x_next]*mdp_probability.compute_probability(all_moves[k], states[i], current_poss_actions[j], goal) + q_current
+                    q_current = gam*V[x_next]*mdp_probability.compute_probability(all_moves[k], states[i], all_moves[j]) + q_current
                 else:
-                    q_current = gam*V[i]*mdp_probability.compute_probability(all_moves[k], states[i], current_poss_actions[j], goal) + q_current
+                    q_current = gam*V[i]*mdp_probability.compute_probability(all_moves[k], states[i], all_moves[j]) + q_current
             if q_current > q_max:
+                if i == 15:
+                    print("i'm here..")
+
                 V_best = V[poss_state]
                 q_max = q_current
                 x_best = poss_state
-                action_best = current_poss_actions[j]
-                optimal_policy_dict[i] = current_poss_actions[j]
-            #if i arrived at local max or min, action S, unless i can bump into a wall:
-            if states[i] == goal:
-                optimal_policy_dict[i] = "S"
-                for k in range(0, len(all_moves)):
-                    if all_moves[k] not in current_poss_actions:
-                        optimal_policy_dict[i] = all_moves[k]
+                action_best = all_moves[j]
+                optimal_policy_dict[i] = all_moves[j]
 
     # maybe create a fx for this:
     print("Policy is derived!")
@@ -680,6 +673,7 @@ def main():
     tuple2 = (1,5)
     tuple3 = (2,5)
     tuple_list = [tuple1, tuple2, tuple3]
+    sim_flag = True
     # R = reward(O, goal)
     # R = reward_case_a(O, goal, tuple_list)
     R = reward_case_b(O, goal, tuple_list)
@@ -760,7 +754,7 @@ def main():
 
     # Perform Value Iteration, return utility function:
     epsilon = 0.001
-    V = value_iteration(mdp_probability,gam, epsilon, R, V_, V, possible_actions, legal_actions, states, goal)
+    V = value_iteration(mdp_probability,gam, epsilon, R, V_, V, possible_actions, legal_actions, states)
 
     #print result of value iteration to csv file.
     print_value_iter_result(V_)
@@ -770,11 +764,12 @@ def main():
 
 
     # Run simulation with policy result. Initialize how many runs you want to do:
-    simulation_run_number = 20000
-    [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
+    if sim_flag == True:
+        simulation_run_number = 100000
+        [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
 
-    # print simulation results to console.
-    print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list, steps_required)
+        # print simulation results to console.
+        print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list, steps_required)
 
 if __name__ == "__main__":
     main()
