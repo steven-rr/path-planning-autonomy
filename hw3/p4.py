@@ -388,14 +388,21 @@ def print_value_iter_result(V_):
 #  Description: Prints to console the success rate and reward average across
 #               simulation runs.
 # ------------------------------------------------------------------------
-def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
-    print("3) Simulating ", simulation_run_number, " attempts...")
+def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list, steps_required):
+    print("3) Simulated ", simulation_run_number, " attempts. Results are the following: ")
     print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
     reward_accumulator = 0
+    steps_accumulator = 0
     for i in range(0, len(simulated_reward_list)):
         reward_accumulator = simulated_reward_list[i] + reward_accumulator
+    for i in range(0, len(steps_required)):
+        steps_accumulator = steps_required[i] + steps_accumulator
     reward_average = reward_accumulator / len(simulated_reward_list)
-    print(reward_average, "is the reward average. ")
+    steps_average =  steps_accumulator / len(steps_required)
+
+    print(reward_average, "is the rewards accumulated ")
+    print(steps_average, "is average steps taken ")
+
 
 # -------------------------------------------------------------------------
 #  Function : compute_state_index
@@ -546,7 +553,7 @@ def compute_optimal_policy(x_init, goal, legal_actions,V, states, mdp_probabilit
             print(optimal_policy_dict[i])
         else:
             print(optimal_policy_dict[i], end=" ")
-
+    print("")
     print("Printing policy to.. : " , end=" ")
     filename = "policy_grid_value_iter.csv"
     print(filename)
@@ -607,11 +614,14 @@ def coin_toss(probability_distribution):
 #               to x_goal. Returns number of succesful attempts, and the reward list.
 # ------------------------------------------------------------------------
 def run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R):
-
     x_list = [[] for x in range(0, simulation_run_number)]
     simulated_reward_list = []
     succesful_attempts = 0
     simulation_results = []
+    steps_required = []
+    run_length = 100
+    O = [0, 5, 19, 27, 28, 31, 33, 41, 45, 53, 61]
+    print("Starting simulation. Run Length of: ", run_length, "iterations per sim... ")
 
     # loop over simulation runs.
     for i in range(0, simulation_run_number):
@@ -619,23 +629,31 @@ def run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_
         x = compute_state_index(x_init, states)
         x_list[i].append(x)
         simulated_reward = 0
-        while True:
-            # attempt the best action at given state.
+        # attempt to get to the goal given the best policy. limit each simulation run to 100 steps.
+        for j in range(0, run_length):
             desired_action = pi[x]
             probability_distribution = mdp_probability.compute_probability_distribution(desired_action, states[x])
             final_action = coin_toss(probability_distribution)
             if final_action in legal_actions[x]:
                 x = compute_future_state_index(final_action, x)
-            x_list[i].append(x)
-            simulated_reward = R.compute_reward(x) + simulated_reward
-            simulated_reward_list.append(simulated_reward)
-            # count number of succesful attempts
-            if x == goal:
-                succesful_attempts = succesful_attempts + 1
-                break
 
+            x_list[i].append(x)
+            simulated_reward = R.compute_reward(states[x]) + simulated_reward
+            # count number of succesful attempts
+            if states[x] == goal:
+                succesful_attempts = succesful_attempts + 1
+                simulated_reward_list.append(simulated_reward)
+                steps_required.append(j + 1)
+                print("Simulation #", i, " complete.. ")
+                break
+            elif j == run_length - 1:
+                simulated_reward_list.append(simulated_reward)
+                steps_required.append(j + 1)
+                print("Simulation #", i, " complete.. ")
+    print("")
     simulation_results.append(simulated_reward_list)
     simulation_results.append(succesful_attempts)
+    simulation_results.append(steps_required)
     return simulation_results
 # -------------------------------------------------------------------------
 #  Function : main
@@ -662,9 +680,9 @@ def main():
     tuple2 = (1,5)
     tuple3 = (2,5)
     tuple_list = [tuple1, tuple2, tuple3]
-    R = reward(O, goal)
+    # R = reward(O, goal)
     # R = reward_case_a(O, goal, tuple_list)
-    # R = reward_case_b(O, goal, tuple_list)
+    R = reward_case_b(O, goal, tuple_list)
     # R = reward_case_c(O, goal, tuple_list)
 
     # states
@@ -752,11 +770,11 @@ def main():
 
 
     # Run simulation with policy result. Initialize how many runs you want to do:
-    simulation_run_number = 100000
-    [simulated_reward_list, succesful_attempts] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
+    simulation_run_number = 20000
+    [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
 
     # print simulation results to console.
-    print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list)
+    print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list, steps_required)
 
 if __name__ == "__main__":
     main()

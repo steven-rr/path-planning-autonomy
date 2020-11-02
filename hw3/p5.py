@@ -295,67 +295,68 @@ class reward():
         else:
             reward_out = -1
         return reward_out
+
 # -------------------------------------------------------------------------
-#  Class : Reward
+#  Class : Reward for Part c Case a
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 # ------------------------------------------------------------------------
 class reward_case_a():
-    def __init__(self, obstacles, goal, cell_tuple):
+    def __init__(self, obstacles, goal, tuple_list):
         self.obstacles = obstacles
         self.goal = goal
-        self.cell_tuple = cell_tuple
+        self.tuple_list = tuple_list
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
-        elif current_state == self.cell_tuple:
+        elif current_state in self.tuple_list:
             reward_out = 0
         else:
             reward_out = -1
         return reward_out
 
 # -------------------------------------------------------------------------
-#  Class : Reward
+#  Class : Reward for Part c Case b
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 # ------------------------------------------------------------------------
 class reward_case_b():
-    def __init__(self, obstacles, goal, cell_tuple):
+    def __init__(self, obstacles, goal, tuple_list):
         self.obstacles = obstacles
         self.goal = goal
-        self.cell_tuple = cell_tuple
+        self.tuple_list = tuple_list
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
-        elif current_state == self.cell_tuple:
+        elif current_state in self.tuple_list:
             reward_out = 100
         else:
             reward_out = -1
         return reward_out
 
 # -------------------------------------------------------------------------
-#  Class : Reward
+#  Class : Reward for Part c Case c
 #  Description: Holds functions for computing reward based on states and
 #               obstacles.
 # ------------------------------------------------------------------------
 class reward_case_c():
-    def __init__(self, obstacles, goal, cell_tuple):
+    def __init__(self, obstacles, goal, tuple_list):
         self.obstacles = obstacles
         self.goal = goal
-        self.cell_tuple = cell_tuple
+        self.tuple_list = tuple_list
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
-        elif current_state == self.cell_tuple:
+        elif current_state in self.tuple_list:
             reward_out = -3
         else:
             reward_out = -1
@@ -425,14 +426,21 @@ def print_policy_policy_iter(x_list, states, action_best_list):
 #  Description: Prints to console the success rate and reward average across
 #               simulation runs.
 # ------------------------------------------------------------------------
-def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list):
-    print("3) Simulating ", simulation_run_number, " attempts...")
+def print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list, steps_required):
+    print("3) Simulated ", simulation_run_number, " attempts. Results are the following: ")
     print(succesful_attempts, "succesful attempts out of ", simulation_run_number, ". That is a ", (succesful_attempts/simulation_run_number)*100, " % chance of success.")
     reward_accumulator = 0
+    steps_accumulator = 0
     for i in range(0, len(simulated_reward_list)):
         reward_accumulator = simulated_reward_list[i] + reward_accumulator
+    for i in range(0, len(steps_required)):
+        steps_accumulator = steps_required[i] + steps_accumulator
     reward_average = reward_accumulator / len(simulated_reward_list)
-    print(reward_average, "is the reward average. ")
+    steps_average =  steps_accumulator / len(steps_required)
+
+    print(reward_average, "is the rewards accumulated ")
+    print(steps_average, "is average steps taken ")
+
 
 
 # -------------------------------------------------------------------------
@@ -686,39 +694,51 @@ def coin_toss(probability_distribution):
 
 # -------------------------------------------------------------------------
 #  Function : run_simulation
-#  Description:  runs simulation by using coin_toss helper function. The simulation
-#                will run n times, where n = simulation_run_number.
+#  Description: Given an optimal policy, probability state transition, and how many
+#               simulations to run, it computes how many times robot can go from x_init
+#               to x_goal. Returns number of succesful attempts, and the reward list.
 # ------------------------------------------------------------------------
-def run_simulation(simulation_run_number, mdp_probability, x_init, goal, action_best_list, states, legal_actions, R):
-
-    simulation_results = []
+def run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R):
     x_list = [[] for x in range(0, simulation_run_number)]
     simulated_reward_list = []
     succesful_attempts = 0
+    simulation_results = []
+    steps_required = []
+    run_length = 100
+    O = [0, 5, 19, 27, 28, 31, 33, 41, 45, 53, 61]
+    print("Starting simulation. Run Length of: ", run_length, "iterations per sim... ")
+
     # loop over simulation runs.
     for i in range(0, simulation_run_number):
-
-        # reinitialize
-        x = x_init
+        # initialize x to initial position and reward to zero.
+        x = compute_state_index(x_init, states)
+        x_list[i].append(x)
         simulated_reward = 0
-
-        # attempt the policy. loop over actions within policy.
-        for j in range(0, len(action_best_list)):
-            desired_action = action_best_list[j]
-            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, x)
+        # attempt to get to the goal given the best policy. limit each simulation run to 100 steps.
+        for j in range(0, run_length):
+            desired_action = pi[x]
+            probability_distribution = mdp_probability.compute_probability_distribution(desired_action, states[x])
             final_action = coin_toss(probability_distribution)
-            if final_action in legal_actions[compute_state_index(x, states)]:
-                x = compute_future_state(final_action, x, states)
-                x_list[i].append(x)
-            simulated_reward = R.compute_reward(x) + simulated_reward
+            if final_action in legal_actions[x]:
+                x = compute_future_state_index(final_action, x)
 
-        simulated_reward_list.append(simulated_reward)
-        # count number of succesful attempts
-        if x == goal:
-            succesful_attempts = succesful_attempts + 1
-
-    simulation_results.append(succesful_attempts)
+            x_list[i].append(x)
+            simulated_reward = R.compute_reward(states[x]) + simulated_reward
+            # count number of succesful attempts
+            if states[x] == goal:
+                succesful_attempts = succesful_attempts + 1
+                simulated_reward_list.append(simulated_reward)
+                steps_required.append(j + 1)
+                print("Simulation #", i, " complete.. ")
+                break
+            elif j == run_length - 1:
+                simulated_reward_list.append(simulated_reward)
+                steps_required.append(j + 1)
+                print("Simulation #", i, " complete.. ")
+    print("")
     simulation_results.append(simulated_reward_list)
+    simulation_results.append(succesful_attempts)
+    simulation_results.append(steps_required)
     return simulation_results
 # -------------------------------------------------------------------------
 #  Class : main
@@ -741,13 +761,14 @@ def main():
     goal= (2,8)
     O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
-    R = reward(O, goal)
-    case_a_tuple = (4,3)
-    case_b_tuple = (1,5)
-    case_c_tuple = (2,5)
-    # R = reward_case_a(O, goal, case_a_tuple)
-    # R = reward_case_b(O, goal, case_b_tuple)
-    # R = reward_case_c(O, goal, case_c_tuple)
+    tuple1 = (4,3)
+    tuple2 = (1,5)
+    tuple3 = (2,5)
+    tuple_list = [tuple1, tuple2, tuple3]
+    # R = reward(O, goal)
+    # R = reward_case_a(O, goal, tuple_list)
+    R = reward_case_b(O, goal, tuple_list)
+    # R = reward_case_c(O, goal, tuple_list)
     # states
 
     # how can i move , depending on my index.
@@ -846,12 +867,11 @@ def main():
     print_policy_policy_iter(x_list, states, action_best_list)
 
     # run simulation .
-    simulation_run_number = 10000
-    [succesful_attempts, simulated_reward_list] = run_simulation(simulation_run_number, mdp_probability, x_init, goal, action_best_list, states, legal_actions, R)
+    simulation_run_number = 20000
+    [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
 
     # print results to console.
-    print_simulation_result(succesful_attempts, simulation_run_number, simulated_reward_list)
-
+    print_simulation_result(succesful_attempts,simulation_run_number,simulated_reward_list, steps_required)
 
 
 if __name__ == "__main__":
