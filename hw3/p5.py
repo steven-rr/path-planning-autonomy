@@ -289,7 +289,7 @@ class reward():
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
         else:

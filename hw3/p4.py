@@ -203,22 +203,27 @@ class probability_transition():
         return result
 
     # compute probability of going to a future state based on current state and current action.
-    def compute_probability(self, future_state_direction, current_state, action):
+    def compute_probability(self, future_state_direction, current_state, action, goal):
         direction = self.arrow_map[(current_state[0], current_state[1])]
         probability_return = 0
-        if direction == "U":
-            probability_return = self.compute_probability_up_arrow(future_state_direction, action)
-        elif direction == "D":
-            probability_return = self.compute_probability_down_arrow(future_state_direction, action)
-        elif direction == "L":
-            probability_return = self.compute_probability_left_arrow(future_state_direction, action)
-        elif direction == "R":
-            probability_return = self.compute_probability_right_arrow(future_state_direction, action)
-        elif direction == "0":
-            if future_state_direction == action:
-                probability_return = 1
-            else:
-                probability_return = 0
+        # if current state is the goal state, don't move. Don't do {U, R, L, D}
+        if current_state == goal:
+            return 0
+
+        else:
+            if direction == "U":
+                probability_return = self.compute_probability_up_arrow(future_state_direction, action)
+            elif direction == "D":
+                probability_return = self.compute_probability_down_arrow(future_state_direction, action)
+            elif direction == "L":
+                probability_return = self.compute_probability_left_arrow(future_state_direction, action)
+            elif direction == "R":
+                probability_return = self.compute_probability_right_arrow(future_state_direction, action)
+            elif direction == "0":
+                if future_state_direction == action:
+                    probability_return = 1
+                else:
+                    probability_return = 0
         return probability_return
 
     # compute probability distribution from trying to do a certain action, given a current state.
@@ -283,7 +288,7 @@ class reward():
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
         else:
@@ -296,17 +301,17 @@ class reward():
 #               obstacles.
 # ------------------------------------------------------------------------
 class reward_case_a():
-    def __init__(self, obstacles, goal, cell_tuple):
+    def __init__(self, obstacles, goal, tuple_list):
         self.obstacles = obstacles
         self.goal = goal
-        self.cell_tuple = cell_tuple
+        self.tuple_list = tuple_list
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
-        elif current_state == self.cell_tuple:
+        elif current_state in self.tuple_list:
             reward_out = 0
         else:
             reward_out = -1
@@ -318,17 +323,17 @@ class reward_case_a():
 #               obstacles.
 # ------------------------------------------------------------------------
 class reward_case_b():
-    def __init__(self, obstacles, goal, cell_tuple):
+    def __init__(self, obstacles, goal, tuple_list):
         self.obstacles = obstacles
         self.goal = goal
-        self.cell_tuple = cell_tuple
+        self.tuple_list = tuple_list
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
-        elif current_state == self.cell_tuple:
+        elif current_state in self.tuple_list:
             reward_out = 100
         else:
             reward_out = -1
@@ -340,17 +345,17 @@ class reward_case_b():
 #               obstacles.
 # ------------------------------------------------------------------------
 class reward_case_c():
-    def __init__(self, obstacles, goal, cell_tuple):
+    def __init__(self, obstacles, goal, tuple_list):
         self.obstacles = obstacles
         self.goal = goal
-        self.cell_tuple = cell_tuple
+        self.tuple_list = tuple_list
     def compute_reward(self,current_state):
         reward_out = 0
         if current_state == self.goal:
-            reward_out = 0
+            reward_out = 10
         elif current_state in self.obstacles:
             reward_out = -10
-        elif current_state == self.cell_tuple:
+        elif current_state in self.tuple_list:
             reward_out = -3
         else:
             reward_out = -1
@@ -448,7 +453,7 @@ def compute_future_state(action, state_tuple, states):
 #  Function : value_iteration
 #  Description: Does Value iteration, returns the optimal value function.
 # ------------------------------------------------------------------------
-def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, legal_actions, states):
+def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, legal_actions, states, goal):
 
     counter = 0
     delta = 10
@@ -472,14 +477,20 @@ def value_iteration(mdp_probability, gam, epsilon, R, V_,V, possible_actions, le
                         future_state_index = i
                     util = V[future_state_index] * mdp_probability.compute_probability(future_state_direction,
                                                                                        states[i],
-                                                                                       current_poss_actions[j]) + util
+                                                                                       current_poss_actions[j], goal) + util
 
                 # if this current action gives higher utility than the max, then update max utility.
                 if util > max_util:
                     max_util = util
                 util = 0
 
-            # update V'. Reward plus max utility.
+            # If state in goal state, allow action = stay.
+            if states[i] == goal:
+                util = V[i]
+                if util > max_util:
+                    max_util = util
+
+                # update V'. Reward plus max utility.
             V_[i] = R.compute_reward(states[i]) + gam * max_util
 
             # check for delta update.
@@ -636,13 +647,14 @@ def main():
     goal= (2,8)
     O = [(1,1),(1,6),(3,4),(4,4),(4,5),(4,8),(5,2),(6,2),(6,6),(7,6), (8,6)]
     gam = 0.95
-    case_a_tuple = (4,3)
-    case_b_tuple = (1,5)
-    case_c_tuple = (2,5)
+    tuple1 = (4,3)
+    tuple2 = (1,5)
+    tuple3 = (2,5)
+    tuple_list = [tuple1, tuple2, tuple3]
     R = reward(O, goal)
-    # R = reward_case_a(O, goal, case_a_tuple)
-    # R = reward_case_b(O, goal, case_b_tuple)
-    # R = reward_case_c(O, goal, case_c_tuple)
+    # R = reward_case_a(O, goal, tuple_list)
+    # R = reward_case_b(O, goal, tuple_list)
+    # R = reward_case_c(O, goal, tuple_list)
 
     # states
 
@@ -718,8 +730,8 @@ def main():
         V_[i] = 0
 
     # Perform Value Iteration, return utility function:
-    epsilon = 0.2
-    V = value_iteration(mdp_probability,gam, epsilon, R, V_, V, possible_actions, legal_actions, states)
+    epsilon = 0.001
+    V = value_iteration(mdp_probability,gam, epsilon, R, V_, V, possible_actions, legal_actions, states, goal)
 
     #print result of value iteration to csv file.
     print_value_iter_result(V_)
