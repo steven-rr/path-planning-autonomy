@@ -397,7 +397,7 @@ def print_simulation_result(succesful_attempts, simulation_run_number, simulated
     reward_average = reward_accumulator / len(simulated_reward_list)
     steps_average =  steps_accumulator / len(steps_required)
 
-    print(reward_average, "is the rewards accumulated ")
+    print(reward_average, "is the average reward accumulated ")
     print(steps_average, "is average steps taken ")
 
 
@@ -676,8 +676,8 @@ def main():
     sim_flag = True
     # R = reward(O, goal)
     # R = reward_case_a(O, goal, tuple_list)
-    R = reward_case_b(O, goal, tuple_list)
-    # R = reward_case_c(O, goal, tuple_list)
+    # R = reward_case_b(O, goal, tuple_list)
+    R = reward_case_c(O, goal, tuple_list)
 
     # states
 
@@ -765,7 +765,7 @@ def main():
 
     # Run simulation with policy result. Initialize how many runs you want to do:
     if sim_flag == True:
-        simulation_run_number = 100000
+        simulation_run_number = 50
         [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
 
         # print simulation results to console.

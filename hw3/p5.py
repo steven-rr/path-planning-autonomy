@@ -559,8 +559,6 @@ def policy_iteration(pi , V, gam, mdp_probability, R, states, possible_actions, 
 
                 # Given the state, and the action, loop through all possible future states.
                 for k in range(0, len(current_poss_actions)):
-                    if i == 30:
-                        print("im here")
                     future_state_direction = current_poss_actions[k]
                     future_state_index = compute_future_state_index(future_state_direction, i)
                     if future_state_direction not in legal_actions[i]:
@@ -766,9 +764,9 @@ def main():
     tuple3 = (2,5)
     tuple_list = [tuple1, tuple2, tuple3]
     sim_flag = True
-    # R = reward(O, goal)
+    R = reward(O, goal)
     # R = reward_case_a(O, goal, tuple_list)
-    R = reward_case_b(O, goal, tuple_list)
+    # R = reward_case_b(O, goal, tuple_list)
     # R = reward_case_c(O, goal, tuple_list)
     # states
 
@@ -869,7 +867,7 @@ def main():
 
     if sim_flag == True:
         # run simulation .
-        simulation_run_number = 100000
+        simulation_run_number = 50
         [simulated_reward_list, succesful_attempts, steps_required] = run_simulation(simulation_run_number, pi, mdp_probability, legal_actions, x_init, goal, states, R)
 
         # print results to console.
